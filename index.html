@@ -11,9 +11,7 @@
   src: url('owned.ttf');
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -22,7 +20,6 @@ body {
   color: #fff;
 }
 
-/* HEADER */
 header {
   padding: 25px;
   text-align: center;
@@ -34,7 +31,6 @@ header div {
   letter-spacing: 4px;
 }
 
-/* CONTAINER */
 .container {
   max-width: 420px;
   margin: 30px auto;
@@ -55,7 +51,6 @@ h2 {
   margin-bottom: 20px;
 }
 
-/* FORM */
 label {
   display: block;
   margin-top: 18px;
@@ -70,15 +65,8 @@ input, select {
   border-radius: 10px;
   border: none;
   font-size: 16px;
-  transition: .2s;
 }
 
-input:focus, select:focus {
-  outline: none;
-  transform: scale(1.01);
-}
-
-/* HORARIOS */
 #horarios {
   margin-top: 10px;
   display: grid;
@@ -96,9 +84,7 @@ input:focus, select:focus {
   transition: .2s;
 }
 
-.hora-btn:hover {
-  background: #333;
-}
+.hora-btn:hover { background: #333; }
 
 .hora-btn.active {
   background: #25d366;
@@ -106,7 +92,6 @@ input:focus, select:focus {
   transform: scale(1.05);
 }
 
-/* BUTTONS */
 button {
   width: 100%;
   padding: 16px;
@@ -118,11 +103,6 @@ button {
   border-radius: 14px;
   cursor: pointer;
   font-weight: bold;
-  transition: .2s;
-}
-
-button:hover {
-  transform: scale(1.02);
 }
 
 .cancel {
@@ -177,7 +157,10 @@ Seleccioná un horario disponible
 const telefonoBarberia = "5491159527947";
 let horaSeleccionada = "";
 
-document.getElementById("fecha").setAttribute("min", new Date().toISOString().split("T")[0]);
+document.getElementById("fecha").setAttribute(
+  "min",
+  new Date().toISOString().split("T")[0]
+);
 
 function cargarHorarios() {
   const cont = document.getElementById("horarios");
@@ -185,22 +168,25 @@ function cargarHorarios() {
   horaSeleccionada = "";
 
   const fecha = new Date(document.getElementById("fecha").value);
-  const dia = fecha.getDay();
+  const dia = fecha.getDay(); // 0 domingo, 1 lunes...
 
+  // DOMINGO CERRADO
   if (dia === 0) {
     cont.innerHTML = "<div style='color:#888;font-size:13px'>Domingos cerrado</div>";
     return;
   }
 
-  let rangos = [];
-
+  // MIÉRCOLES (3) Y VIERNES (5)
   if (dia === 3 || dia === 5) {
-    rangos = [["10:00","16:30"]];
-  } else {
-    rangos = [["09:00","13:00"],["15:30","20:00"]];
+    generarHoras("10:00","16:30");
+    return;
   }
 
-  rangos.forEach(r => generarHoras(r[0], r[1]));
+  // LUNES (1), MARTES (2), JUEVES (4)
+  if (dia === 1 || dia === 2 || dia === 4) {
+    generarHoras("09:00","13:00");
+    generarHoras("15:30","20:00");
+  }
 }
 
 function generarHoras(inicio, fin) {
@@ -226,30 +212,32 @@ function seleccionarHora(btn, hora) {
 }
 
 function reservarTurno() {
-  if (!horaSeleccionada) {
-    alert("Seleccioná un horario");
+  const nombre = document.getElementById("nombre").value.trim();
+  const servicio = document.getElementById("servicio").value;
+  const fechaValor = document.getElementById("fecha").value;
+
+  if (!nombre || !servicio || !fechaValor || !horaSeleccionada) {
+    alert("Completá todos los campos");
     return;
   }
 
-  const nombre = nombre.value;
-  const servicio = servicio.value;
-  const fecha = new Date(document.getElementById("fecha").value);
-
+  const fecha = new Date(fechaValor);
   const dia = fecha.getDate();
   const mes = fecha.toLocaleString("es-ES",{month:"long"});
 
-  const mensaje = `Hola! Soy ${nombre}.
+  const mensaje =
+`Hola! Soy ${nombre}.
 Quiero reservar un turno en ViaggioStyle.
 
 Servicio: ${servicio}
 Día: ${dia} de ${mes}
 Hora: ${horaSeleccionada}`;
 
-  window.open(`https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`);
+  window.open(`https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`, "_blank");
 }
 
 function cancelarTurno() {
-  window.open(`https://wa.me/${telefonoBarberia}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar mi turno.")}`);
+  window.open(`https://wa.me/${telefonoBarberia}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar mi turno.")}`, "_blank");
 }
 </script>
 

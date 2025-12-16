@@ -4,161 +4,190 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ViaggioStyle | Turnos</title>
+
   <style>
-    @font-face {
-      font-family: 'Owned';
-      src: url('owned.ttf');
-    }
     body {
       font-family: Arial, sans-serif;
-      background: #111;
+      background: radial-gradient(circle at top, #1a1a1a, #0d0d0d);
       color: #fff;
       margin: 0;
       padding: 0;
     }
+
     header {
       background: #000;
-      padding: 20px;
+      padding: 22px;
       text-align: center;
+      font-size: 30px;
+      letter-spacing: 3px;
+      font-weight: bold;
     }
+
     .container {
       max-width: 420px;
-      margin: 30px auto;
-      background: #1c1c1c;
-      padding: 20px;
-      border-radius: 12px;
+      margin: 50px auto;
+      background: linear-gradient(180deg, #1f1f1f, #181818);
+      padding: 26px;
+      border-radius: 18px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.6);
     }
+
     h2 {
       text-align: center;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
-    p {
+
+    .subtitulo {
       text-align: center;
       font-size: 13px;
-      color: #bbb;
+      color: #aaa;
+      margin-bottom: 22px;
     }
+
     label {
       display: block;
-      margin-top: 15px;
+      margin-top: 18px;
       font-size: 14px;
+      font-weight: 600;
     }
+
     input, select {
-  width: 100%;
-  padding: 14px;
-  margin-top: 5px;
-  border-radius: 6px;
-  border: none;
-  font-size: 16px;
-  height: 50px;
-  box-sizing: border-box;
-    }
-    button {
       width: 100%;
-      margin-top: 20px;
-      padding: 15px;
+      padding: 13px;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      background: #fff;
+    }
+
+    .campo-horario {
+      background: #111;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 6px;
+      border: 1px solid #2a2a2a;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #bbb;
+      margin-bottom: 10px;
+    }
+
+    .horas button {
+      width: 100%;
+      margin-top: 8px;
+      padding: 13px;
+      border-radius: 10px;
+      border: none;
+      background: #2f2f2f;
+      color: #fff;
+      cursor: pointer;
+      font-size: 15px;
+      transition: all .2s ease;
+    }
+
+    .horas button:hover {
       background: #25d366;
+      transform: scale(1.01);
+    }
+
+    .horas button.seleccionado {
+      background: #25d366;
+    }
+
+    .horas button.bloqueado {
+      background: #555;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transform: none;
+    }
+
+    button.confirmar {
+      width: 100%;
+      margin-top: 26px;
+      padding: 17px;
+      background: linear-gradient(135deg, #2eea75, #25d366);
       border: none;
       color: #fff;
       font-size: 18px;
-      border-radius: 10px;
+      border-radius: 16px;
       cursor: pointer;
     }
-    button:hover { background: #1ebe5d; }
-    .cancel {
-      background: #ff4444;
+
+    button.confirmar:hover {
+      opacity: .9;
     }
-    .bloque button {
-  width: 100%;
-  margin-top: 6px;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  background: #333;
-  color: #fff;
-  cursor: pointer;
-  font-size: 15px;
-}
 
-.bloque button:hover {
-  background: #25d366;
-}
+    .nota {
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 8px;
+    }
 
-.bloque button.bloqueado {
-  background: #555;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
+    button.cancelar {
+      width: 100%;
+      margin-top: 18px;
+      padding: 15px;
+      background: #ff4444;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      border-radius: 14px;
+      cursor: pointer;
+    }
   </style>
 </head>
+
 <body>
 
-<header>
-  <div style="font-family:'Owned','Impact','Arial Black',sans-serif;font-size:30px;letter-spacing:3px;">
-    VIAGGIOSTYLE
-  </div>
-</header>
+<header>VIAGGIOSTYLE</header>
 
 <div class="container">
   <h2>Reservar turno</h2>
-  
-  <label>Nombre Completo</label>
+  <div class="subtitulo">Elegí día y horario disponible</div>
+
+  <label>Nombre completo</label>
   <input type="text" id="nombre" placeholder="Tu nombre y apellido" />
 
   <label>Servicio</label>
   <select id="servicio">
     <option value="">Seleccionar</option>
-    <option>Corte (incluye perfilado de cejas sin costo)</option>
-    <option>Corte + Barba (incluye perfilado de cejas sin costo)</option>
+    <option>Corte</option>
+    <option>Corte + Barba</option>
   </select>
 
-  <label>Fecha</label>
-  <input type="date" id="fecha" onchange="cargarHorarios()" min="2025-12-16" />
+  <label>Día</label>
+  <input type="date" id="fecha" onchange="cargarHorarios()" />
 
   <label>Horario</label>
-<p style="font-size:13px;color:#bbb;margin-top:5px;">
-  Seleccioná un horario disponible
-</p>
-
-<div id="horarios">
-  <div id="manana">
-    <strong>Mañana</strong>
-    <div class="bloque"></div>
+  <div class="campo-horario">
+    <div class="hint">Seleccioná un horario disponible</div>
+    <div class="horas"></div>
   </div>
 
-  <div id="tarde" style="margin-top:15px;">
-    <strong>Tarde</strong>
-    <div class="bloque"></div>
-  </div>
-</div>
+  <button class="confirmar" onclick="reservarTurno()">Confirmar turno</button>
+  <div class="nota">Se abrirá WhatsApp para confirmar</div>
 
-
-
-  <button onclick="reservarTurno()">Confirmar turno</button>
-  <p style="text-align:center;font-size:13px;color:#bbb;margin-top:10px;">
-  Se abrirá WhatsApp para confirmar
-</p>
-
-  <button class="cancel" onclick="cancelarTurno()">Cancelar / Reprogramar</button>
+  <button class="cancelar" onclick="cancelarTurno()">Cancelar / Reprogramar</button>
 </div>
 
 <script>
 const telefonoBarberia = "5491159527947";
-
-/* 📅 HORARIOS + DOMINGOS BLOQUEADOS */
 let horarioSeleccionado = "";
 
 function cargarHorarios() {
   const fecha = document.getElementById("fecha").value;
-  const manana = document.querySelector("#manana .bloque");
-  const tarde = document.querySelector("#tarde .bloque");
+  const contenedor = document.querySelector(".horas");
 
-  manana.innerHTML = "";
-  tarde.innerHTML = "";
+  contenedor.innerHTML = "";
+  horarioSeleccionado = "";
 
   if (!fecha) return;
 
   const dia = new Date(fecha + "T00:00:00").getDay();
-  // 0 dom, 1 lun, 2 mar, 3 mie, 4 jue, 5 vie, 6 sab
 
   if (dia === 0) {
     alert("Los domingos no trabajamos");
@@ -167,17 +196,17 @@ function cargarHorarios() {
   }
 
   if (dia === 3 || dia === 5) {
-    crearBotones("10:00", "16:30", fecha);
+    generarHoras("10:00", "16:30", fecha);
     return;
   }
 
-  if (dia === 1 || dia === 2 || dia === 4 || dia === 6) {
-    crearBotones("09:00", "13:00", fecha);
-    crearBotones("15:30", "20:00", fecha);
+  if (dia === 1 || dia === 2 || dia === 4) {
+    generarHoras("09:00", "13:00", fecha);
+    generarHoras("15:30", "20:00", fecha);
   }
 }
 
-function crearBotones(inicio, fin, fecha) {
+function generarHoras(inicio, fin, fecha) {
   let [h, m] = inicio.split(":").map(Number);
   const [hf, mf] = fin.split(":").map(Number);
 
@@ -195,45 +224,18 @@ function crearBotones(inicio, fin, fecha) {
     } else {
       btn.onclick = () => {
         horarioSeleccionado = hora;
-        document.querySelectorAll(".bloque button").forEach(b => b.style.background="#333");
-        btn.style.background = "#25d366";
+        document.querySelectorAll(".horas button").forEach(b => b.classList.remove("seleccionado"));
+        btn.classList.add("seleccionado");
       };
     }
 
-    if (h < 13) {
-      document.querySelector("#manana .bloque").appendChild(btn);
-    } else {
-      document.querySelector("#tarde .bloque").appendChild(btn);
-    }
+    document.querySelector(".horas").appendChild(btn);
 
     m += 30;
-    if (m >= 60) {
-      m = 0;
-      h++;
-    }
+    if (m >= 60) { m = 0; h++; }
   }
 }
 
-/* ⏱ GENERADOR DE HORARIOS */
-function generarRango(inicio, fin, intervalo) {
-  const resultado = [];
-  let [h, m] = inicio.split(":").map(Number);
-  const [hFin, mFin] = fin.split(":").map(Number);
-
-  while (h < hFin || (h === hFin && m <= mFin)) {
-    resultado.push(
-      `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`
-    );
-    m += intervalo;
-    if (m >= 60) {
-      m = 0;
-      h++;
-    }
-  }
-  return resultado;
-}
-
-/* 📲 WHATSAPP */
 function reservarTurno() {
   const nombre = document.getElementById("nombre").value.trim();
   const servicio = document.getElementById("servicio").value;
@@ -248,17 +250,11 @@ function reservarTurno() {
   const dia = fechaObj.getDate();
   const mes = fechaObj.toLocaleString("es-ES", { month: "long" });
 
-  const confirmar = confirm(
-    `Confirmar turno:\n\n` +
-    `Servicio: ${servicio}\n` +
-    `Día: ${dia} de ${mes}\n` +
-    `Hora: ${horarioSeleccionado}`
-  );
+  if (!confirm(
+    `Confirmar turno:\n\nServicio: ${servicio}\nDía: ${dia} de ${mes}\nHora: ${horarioSeleccionado}`
+  )) return;
 
-  if (!confirmar) return;
-
-  const clave = `${fecha}_${horarioSeleccionado}`;
-  localStorage.setItem(clave, "ocupado");
+  localStorage.setItem(`${fecha}_${horarioSeleccionado}`, "ocupado");
 
   const mensaje =
     `Hola! Soy ${nombre}. Quiero reservar un turno en ViaggioStyle.\n\n` +
@@ -266,35 +262,16 @@ function reservarTurno() {
     `Día: ${dia} de ${mes}\n` +
     `Hora: ${horarioSeleccionado}`;
 
+  window.open(`https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`, "_blank");
+}
+
+function cancelarTurno() {
   window.open(
-    `https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`,
+    `https://wa.me/${telefonoBarberia}?text=Hola! Quiero cancelar o reprogramar mi turno.`,
     "_blank"
   );
 }
-
-
-  // Convertir hora a AM/PM
-  let [h, m] = hora.split(":").map(Number);
-  let ampm = h >= 12 ? "PM" : "AM";
-  h = h % 12;
-  if (h === 0) h = 12;
-  hora = `${h}:${m.toString().padStart(2,"0")} ${ampm}`;
-
-  const fechaObj = new Date(fecha + "T00:00:00");
-  const dia = fechaObj.getDate();
-  const mes = fechaObj.toLocaleString("es-ES", { month: "long" });
-
-  const mensaje =
-    `Hola! Soy ${nombre}. Quiero reservar un turno en ViaggioStyle.\n\n` +
-    `Servicio: ${servicio}\n` +
-    `Día: ${dia} de ${mes}\n` +
-    `Hora: ${hora}`;
-
-  const url = `https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`;
-  window.open(url, "_blank");
-}
 </script>
-
 
 </body>
 </html>

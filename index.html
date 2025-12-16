@@ -115,6 +115,9 @@
   <input type="date" id="fecha" onchange="cargarHorarios()" min="2025-12-16" />
 
   <label>Horario</label>
+<p style="font-size:13px;color:#bbb;margin-top:5px;">
+  Seleccioná un horario disponible
+</p>
 
 <div id="horarios">
   <div id="manana">
@@ -129,7 +132,12 @@
 </div>
 
 
+
   <button onclick="reservarTurno()">Confirmar turno</button>
+  <p style="text-align:center;font-size:13px;color:#bbb;margin-top:10px;">
+  Se abrirá WhatsApp para confirmar
+</p>
+
   <button class="cancel" onclick="cancelarTurno()">Cancelar / Reprogramar</button>
 </div>
 
@@ -236,12 +244,21 @@ function reservarTurno() {
     return;
   }
 
-  const clave = `${fecha}_${horarioSeleccionado}`;
-  localStorage.setItem(clave, "ocupado");
-
   const fechaObj = new Date(fecha + "T00:00:00");
   const dia = fechaObj.getDate();
   const mes = fechaObj.toLocaleString("es-ES", { month: "long" });
+
+  const confirmar = confirm(
+    `Confirmar turno:\n\n` +
+    `Servicio: ${servicio}\n` +
+    `Día: ${dia} de ${mes}\n` +
+    `Hora: ${horarioSeleccionado}`
+  );
+
+  if (!confirmar) return;
+
+  const clave = `${fecha}_${horarioSeleccionado}`;
+  localStorage.setItem(clave, "ocupado");
 
   const mensaje =
     `Hola! Soy ${nombre}. Quiero reservar un turno en ViaggioStyle.\n\n` +

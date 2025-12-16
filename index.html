@@ -67,6 +67,27 @@
     .cancel {
       background: #ff4444;
     }
+    .bloque button {
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #333;
+  color: #fff;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.bloque button:hover {
+  background: #25d366;
+}
+
+.bloque button.bloqueado {
+  background: #555;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
   </style>
 </head>
 <body>
@@ -93,8 +114,20 @@
   <label>Fecha</label>
   <input type="date" id="fecha" onchange="cargarHorarios()" min="2025-12-16" />
 
-  <label>Hora</label>
-  <input type="time" id="hora" />
+  <label>Horario</label>
+
+<div id="horarios">
+  <div id="manana">
+    <strong>Mañana</strong>
+    <div class="bloque"></div>
+  </div>
+
+  <div id="tarde" style="margin-top:15px;">
+    <strong>Tarde</strong>
+    <div class="bloque"></div>
+  </div>
+</div>
+
 
   <button onclick="reservarTurno()">Confirmar turno</button>
   <button class="cancel" onclick="cancelarTurno()">Cancelar / Reprogramar</button>
@@ -104,58 +137,66 @@
 const telefonoBarberia = "5491159527947";
 
 /* 📅 HORARIOS + DOMINGOS BLOQUEADOS */
+let horarioSeleccionado = "";
+
 function cargarHorarios() {
-  const fechaInput = document.getElementById("fecha");
-  const horaSelect = document.getElementById("hora");
+  const fecha = document.getElementById("fecha").value;
+  const manana = document.querySelector("#manana .bloque");
+  const tarde = document.querySelector("#tarde .bloque");
 
-  // limpiar horarios SIEMPRE
-  horaSelect.innerHTML = '<option value="">Seleccionar horario</option>';
+  manana.innerHTML = "";
+  tarde.innerHTML = "";
 
-  if (!fechaInput.value) return;
+  if (!fecha) return;
 
-  const fecha = new Date(fechaInput.value + "T00:00:00");
-  const diaSemana = fecha.getDay();
-  // 0 domingo, 1 lunes, 2 martes, 3 miércoles, 4 jueves, 5 viernes, 6 sábado
+  const dia = new Date(fecha + "T00:00:00").getDay();
+  // 0 dom, 1 lun, 2 mar, 3 mie, 4 jue, 5 vie, 6 sab
 
-  // 🚫 DOMINGO
-  if (diaSemana === 0) {
+  if (dia === 0) {
     alert("Los domingos no trabajamos");
-    fechaInput.value = "";
+    document.getElementById("fecha").value = "";
     return;
   }
 
-  // 🟡 MIÉRCOLES Y VIERNES → SOLO 10:00 A 16:30
-  if (diaSemana === 3 || diaSemana === 5) {
-    agregarHorarios("10:00", "16:30");
-    return; // ⛔ NO SIGUE EJECUTANDO NADA MÁS
+  if (dia === 3 || dia === 5) {
+    crearBotones("10:00", "16:30", fecha);
+    return;
   }
 
-  // 🟢 OTROS DÍAS
-  agregarHorarios("09:00", "13:00");
-  agregarHorarios("15:30", "20:00");
+  if (dia === 1 || dia === 2 || dia === 4 || dia === 6) {
+    crearBotones("09:00", "13:00", fecha);
+    crearBotones("15:30", "20:00", fecha);
+  }
 }
 
-  // Crear options
-  horarios.forEach(hora => {
-    const option = document.createElement("option");
-    option.value = hora;
-    option.textContent = hora;
-    horaSelect.appendChild(option);
-  });
-}
-function agregarHorarios(inicio, fin) {
-  const horaSelect = document.getElementById("hora");
-
+function crearBotones(inicio, fin, fecha) {
   let [h, m] = inicio.split(":").map(Number);
-  const [hFin, mFin] = fin.split(":").map(Number);
+  const [hf, mf] = fin.split(":").map(Number);
 
-  while (h < hFin || (h === hFin && m <= mFin)) {
-    const hora = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  while (h < hf || (h === hf && m <= mf)) {
+    const hora = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+    const clave = `${fecha}_${hora}`;
+    const ocupado = localStorage.getItem(clave);
 
-    const option = document.createElement("option");
-    option.value = hora;
-    option.textContent = hora;
-    horaSelect.appendChild(option);
+    const btn = document.createElement("button");
+    btn.textContent = hora;
+
+    if (ocupado) {
+      btn.classList.add("bloqueado");
+      btn.disabled = true;
+    } else {
+      btn.onclick = () => {
+        horarioSeleccionado = hora;
+        document.querySelectorAll(".bloque button").forEach(b => b.style.background="#333");
+        btn.style.background = "#25d366";
+      };
+    }
+
+    if (h < 13) {
+      document.querySelector("#manana .bloque").appendChild(btn);
+    } else {
+      document.querySelector("#tarde .bloque").appendChild(btn);
+    }
 
     m += 30;
     if (m >= 60) {
@@ -189,12 +230,31 @@ function reservarTurno() {
   const nombre = document.getElementById("nombre").value.trim();
   const servicio = document.getElementById("servicio").value;
   const fecha = document.getElementById("fecha").value;
-  let hora = document.getElementById("hora").value;
 
-  if (!nombre || !servicio || !fecha || !hora) {
-    alert("Completá todos los campos");
+  if (!nombre || !servicio || !fecha || !horarioSeleccionado) {
+    alert("Completá todos los campos y seleccioná un horario");
     return;
   }
+
+  const clave = `${fecha}_${horarioSeleccionado}`;
+  localStorage.setItem(clave, "ocupado");
+
+  const fechaObj = new Date(fecha + "T00:00:00");
+  const dia = fechaObj.getDate();
+  const mes = fechaObj.toLocaleString("es-ES", { month: "long" });
+
+  const mensaje =
+    `Hola! Soy ${nombre}. Quiero reservar un turno en ViaggioStyle.\n\n` +
+    `Servicio: ${servicio}\n` +
+    `Día: ${dia} de ${mes}\n` +
+    `Hora: ${horarioSeleccionado}`;
+
+  window.open(
+    `https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`,
+    "_blank"
+  );
+}
+
 
   // Convertir hora a AM/PM
   let [h, m] = hora.split(":").map(Number);

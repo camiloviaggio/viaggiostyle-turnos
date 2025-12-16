@@ -167,41 +167,57 @@ function cargarHorarios() {
   cont.innerHTML = "";
   horaSeleccionada = "";
 
-  const fecha = new Date(document.getElementById("fecha").value);
-  const dia = fecha.getDay(); // 0 domingo, 1 lunes...
+  const fechaInput = document.getElementById("fecha").value;
+  if (!fechaInput) return;
 
-  // DOMINGO CERRADO
+  const fecha = new Date(fechaInput + "T00:00:00");
+  const dia = fecha.getDay(); // 0=Dom, 1=Lun, ...
+
+  // 🔴 DOMINGO — CERRADO
   if (dia === 0) {
     cont.innerHTML = "<div style='color:#888;font-size:13px'>Domingos cerrado</div>";
     return;
   }
 
-  // MIÉRCOLES (3) Y VIERNES (5)
+  // 🟣 MIÉRCOLES Y VIERNES — 10:00 a 16:30
   if (dia === 3 || dia === 5) {
-    generarHoras("10:00","16:30");
+    generarHoras("10:00", "16:30");
     return;
   }
 
-  // LUNES (1), MARTES (2), JUEVES (4)
+  // 🔵 LUNES, MARTES Y JUEVES — 9 a 13 / 15:30 a 20
   if (dia === 1 || dia === 2 || dia === 4) {
-    generarHoras("09:00","13:00");
-    generarHoras("15:30","20:00");
+    generarHoras("09:00", "13:00");
+    generarHoras("15:30", "20:00");
+    return;
+  }
+
+  // 🟢 SÁBADO — 9:00 a 20:00 completo
+  if (dia === 6) {
+    generarHoras("09:00", "20:00");
   }
 }
 
 function generarHoras(inicio, fin) {
-  let [h,m] = inicio.split(":").map(Number);
-  let [hf,mf] = fin.split(":").map(Number);
+  let [h, m] = inicio.split(":").map(Number);
+  let [hf, mf] = fin.split(":").map(Number);
 
   while (h < hf || (h === hf && m <= mf)) {
     const hora = `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}`;
+
     const btn = document.createElement("button");
     btn.className = "hora-btn";
     btn.textContent = hora;
+
     btn.onclick = () => seleccionarHora(btn, hora);
+
     document.getElementById("horarios").appendChild(btn);
+
     m += 30;
-    if (m === 60) { m = 0; h++; }
+    if (m === 60) {
+      m = 0;
+      h++;
+    }
   }
 }
 
@@ -217,13 +233,13 @@ function reservarTurno() {
   const fechaValor = document.getElementById("fecha").value;
 
   if (!nombre || !servicio || !fechaValor || !horaSeleccionada) {
-    alert("Completá todos los campos");
+    alert("Completá todos los campos y seleccioná un horario");
     return;
   }
 
-  const fecha = new Date(fechaValor);
+  const fecha = new Date(fechaValor + "T00:00:00");
   const dia = fecha.getDate();
-  const mes = fecha.toLocaleString("es-ES",{month:"long"});
+  const mes = fecha.toLocaleString("es-ES", { month: "long" });
 
   const mensaje =
 `Hola! Soy ${nombre}.
@@ -233,7 +249,8 @@ Servicio: ${servicio}
 Día: ${dia} de ${mes}
 Hora: ${horaSeleccionada}`;
 
-  window.open(`https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`, "_blank");
+  const url = `https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, "_blank");
 }
 
 function cancelarTurno() {

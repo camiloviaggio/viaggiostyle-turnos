@@ -103,20 +103,82 @@
 <script>
 const telefonoBarberia = "5491159527947";
 
+/* 📅 HORARIOS + DOMINGOS BLOQUEADOS */
+function cargarHorarios() {
+  const fechaInput = document.getElementById("fecha");
+  const horaSelect = document.getElementById("hora");
+
+  horaSelect.innerHTML = '<option value="">Seleccionar horario</option>';
+
+  if (!fechaInput.value) return;
+
+  const fecha = new Date(fechaInput.value + "T00:00:00");
+  const diaSemana = fecha.getDay(); 
+  // 0 domingo, 1 lunes, 2 martes, 3 miércoles, 4 jueves, 5 viernes, 6 sábado
+
+  // 🚫 DOMINGO
+  if (diaSemana === 0) {
+    alert("Los domingos no trabajamos");
+    fechaInput.value = "";
+    return;
+  }
+
+  let horarios = [];
+
+  // 🟡 MIÉRCOLES Y VIERNES
+  if (diaSemana === 3 || diaSemana === 5) {
+    horarios = generarRango("10:00", "16:30", 30);
+  } 
+  // 🟢 LUN, MAR, JUE, SÁB
+  else {
+    horarios = [
+      ...generarRango("09:00", "13:00", 30),
+      ...generarRango("15:30", "20:00", 30)
+    ];
+  }
+
+  horarios.forEach(hora => {
+    const option = document.createElement("option");
+    option.value = hora;
+    option.textContent = hora;
+    horaSelect.appendChild(option);
+  });
+}
+
+/* ⏱ GENERADOR DE HORARIOS */
+function generarRango(inicio, fin, intervalo) {
+  const resultado = [];
+  let [h, m] = inicio.split(":").map(Number);
+  const [hFin, mFin] = fin.split(":").map(Number);
+
+  while (h < hFin || (h === hFin && m <= mFin)) {
+    resultado.push(
+      `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`
+    );
+    m += intervalo;
+    if (m >= 60) {
+      m = 0;
+      h++;
+    }
+  }
+  return resultado;
+}
+
+/* 📲 WHATSAPP */
 function reservarTurno() {
-  const nombre = document.getElementById('nombre').value.trim();
-  const servicio = document.getElementById('servicio').value;
-  const fecha = document.getElementById('fecha').value;
-  const hora = document.getElementById('hora').value;
+  const nombre = document.getElementById("nombre").value.trim();
+  const servicio = document.getElementById("servicio").value;
+  const fecha = document.getElementById("fecha").value;
+  const hora = document.getElementById("hora").value;
 
   if (!nombre || !servicio || !fecha || !hora) {
     alert("Completá todos los campos");
     return;
   }
 
-  const fechaObj = new Date(fecha);
+  const fechaObj = new Date(fecha + "T00:00:00");
   const dia = fechaObj.getDate();
-  const mes = fechaObj.toLocaleString('es-ES', { month: 'long' });
+  const mes = fechaObj.toLocaleString("es-ES", { month: "long" });
 
   const mensaje =
     `Hola! Soy ${nombre}. Quiero reservar un turno en ViaggioStyle.\n\n` +

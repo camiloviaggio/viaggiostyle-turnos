@@ -113,10 +113,9 @@ function cargarHorarios() {
   if (!fechaInput.value) return;
 
   const fecha = new Date(fechaInput.value + "T00:00:00");
-  const diaSemana = fecha.getDay(); 
-  // 0 domingo, 1 lunes, 2 martes, 3 miércoles, 4 jueves, 5 viernes, 6 sábado
+  const diaSemana = fecha.getDay(); // 0=domingo,1=lunes,...,5=viernes
 
-  // 🚫 DOMINGO
+  // 🚫 DOMINGO BLOQUEADO
   if (diaSemana === 0) {
     alert("Los domingos no trabajamos");
     fechaInput.value = "";
@@ -125,11 +124,11 @@ function cargarHorarios() {
 
   let horarios = [];
 
-  // 🟡 MIÉRCOLES Y VIERNES
+  // 🟡 MIÉRCOLES Y VIERNES → 10:00 AM a 4:30 PM
   if (diaSemana === 3 || diaSemana === 5) {
     horarios = generarRango("10:00", "16:30", 30);
   } 
-  // 🟢 LUN, MAR, JUE, SÁB
+  // 🟢 LUN, MAR, JUE, SÁB → 09:00-13:00 y 15:30-20:00
   else {
     horarios = [
       ...generarRango("09:00", "13:00", 30),
@@ -137,6 +136,7 @@ function cargarHorarios() {
     ];
   }
 
+  // Crear options
   horarios.forEach(hora => {
     const option = document.createElement("option");
     option.value = hora;
@@ -169,12 +169,19 @@ function reservarTurno() {
   const nombre = document.getElementById("nombre").value.trim();
   const servicio = document.getElementById("servicio").value;
   const fecha = document.getElementById("fecha").value;
-  const hora = document.getElementById("hora").value;
+  let hora = document.getElementById("hora").value;
 
   if (!nombre || !servicio || !fecha || !hora) {
     alert("Completá todos los campos");
     return;
   }
+
+  // Convertir hora a AM/PM
+  let [h, m] = hora.split(":").map(Number);
+  let ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12;
+  if (h === 0) h = 12;
+  hora = `${h}:${m.toString().padStart(2,"0")} ${ampm}`;
 
   const fechaObj = new Date(fecha + "T00:00:00");
   const dia = fechaObj.getDate();
@@ -186,12 +193,6 @@ function reservarTurno() {
     `Día: ${dia} de ${mes}\n` +
     `Hora: ${hora}`;
 
-  const url = `https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`;
-  window.open(url, "_blank");
-}
-
-function cancelarTurno() {
-  const mensaje = "Hola! Quiero cancelar o reprogramar mi turno en ViaggioStyle.";
   const url = `https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`;
   window.open(url, "_blank");
 }

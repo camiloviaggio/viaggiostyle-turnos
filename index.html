@@ -142,37 +142,6 @@ button {
 </style>
 </head>
 
-<!-- PARTE 3 -->
-<script>
-function mostrarResumen() {
-  const nombre = nombreInput.value.trim();
-  const servicio = servicioInput.value;
-  const fechaValor = fechaInput.value;
-
-  if (!nombre || !servicio || !fechaValor || !horaSeleccionada) {
-    alert("Completá todos los campos");
-    return;
-  }
-
-  const fecha = new Date(fechaValor + "T00:00:00");
-  resServicio.textContent = servicio;
-  resFecha.textContent = fecha.toLocaleDateString("es-AR",{weekday:"long", day:"numeric", month:"long"});
-  resHora.textContent = horaSeleccionada;
-
-  overlay.classList.add("active");
-  modal.classList.add("active");
-}
-
-function cerrarResumen() {
-  overlay.classList.remove("active");
-  modal.classList.remove("active");
-}
-
-function confirmarYEnviar() {
-  cerrarResumen();
-  reservarTurno();
-}
-</script>
 
 <body>
 
@@ -293,6 +262,32 @@ Hora: ${horaSeleccionada}`;
 
 function cancelarTurno() {
   window.open(`https://wa.me/${telefonoBarberia}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar un turno.")}`,"_blank");
+function mostrarResumen() {
+  if (!nombreInput.value || !servicioInput.value || !fechaInput.value || !horaSeleccionada) {
+    alert("Completá todos los campos");
+    return;
+  }
+
+  const fecha = new Date(fechaInput.value + "T00:00:00");
+
+  document.getElementById("resServicio").textContent = servicioInput.value;
+  document.getElementById("resFecha").textContent =
+    fecha.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
+  document.getElementById("resHora").textContent = horaSeleccionada;
+
+  overlay.classList.add("active");
+  modal.classList.add("active");
+}
+
+function cerrarResumen() {
+  overlay.classList.remove("active");
+  modal.classList.remove("active");
+}
+
+function confirmarYEnviar() {
+  cerrarResumen();
+  reservarTurno();
+}
 }
 </script>
 

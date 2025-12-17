@@ -10,15 +10,15 @@
 
 body {
   margin: 0;
+  background: radial-gradient(circle at top, #1b1b1b, #000);
   font-family: Arial, sans-serif;
-  background: #0f0f0f;
   color: #fff;
 }
 
 header {
   padding: 25px;
   text-align: center;
-  font-size: 30px;
+  font-size: 32px;
   letter-spacing: 4px;
   font-weight: bold;
 }
@@ -26,15 +26,23 @@ header {
 .container {
   max-width: 420px;
   margin: 30px auto;
-  background: #1a1a1a;
+  background: linear-gradient(180deg,#1f1f1f,#151515);
   padding: 25px;
   border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.6);
+  animation: fadeUp .4s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 label {
   display: block;
   margin-top: 18px;
   font-size: 14px;
+  color: #ddd;
 }
 
 input, select {
@@ -56,25 +64,29 @@ input, select {
 .hora-btn {
   padding: 12px;
   border-radius: 10px;
-  background: #333;
+  background: #2a2a2a;
   border: none;
   color: #fff;
   cursor: pointer;
+  transition: .2s;
 }
+
+.hora-btn:hover { background: #333; }
 
 .hora-btn.active {
   background: #25d366;
   color: #000;
+  transform: scale(1.05);
 }
 
 button {
   width: 100%;
   padding: 16px;
-  margin-top: 20px;
+  margin-top: 25px;
   background: #25d366;
   border: none;
   color: #000;
-  font-size: 17px;
+  font-size: 18px;
   border-radius: 14px;
   cursor: pointer;
   font-weight: bold;
@@ -85,11 +97,59 @@ button {
   color: #fff;
 }
 
-.small {
+.small-text {
+  text-align: center;
   font-size: 12px;
   color: #aaa;
-  text-align: center;
   margin-top: 6px;
+}
+
+/* OVERLAY */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  opacity: 0;
+  pointer-events: none;
+  transition: .3s;
+  z-index: 100;
+}
+
+.overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -40%);
+  background: linear-gradient(180deg,#1f1f1f,#141414);
+  padding: 25px;
+  width: 90%;
+  max-width: 360px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.7);
+  opacity: 0;
+  transition: .3s ease;
+  z-index: 101;
+}
+
+.modal.active {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+
+.resumen-item {
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+
+.btn-volver {
+  background: #2a2a2a;
+  color: #fff;
 }
 </style>
 </head>
@@ -99,138 +159,125 @@ button {
 <header>VIAGGIOSTYLE</header>
 
 <div class="container">
+  <label>Nombre completo</label>
+  <input id="nombre">
 
-<label>Nombre completo</label>
-<input id="nombre">
+  <label>Servicio</label>
+  <select id="servicio">
+    <option value="">Seleccionar</option>
+    <option>Corte</option>
+    <option>Corte + Barba</option>
+  </select>
 
-<label>Servicio</label>
-<select id="servicio">
-  <option value="">Seleccionar</option>
-  <option>Corte</option>
-  <option>Corte + Barba</option>
-</select>
+  <label>Día</label>
+  <input type="date" id="fecha" onchange="cargarHorarios()">
 
-<label>Día</label>
-<input type="date" id="fecha">
+  <label>Horario</label>
+  <div style="font-size:13px;color:#bbb">Seleccioná un horario disponible</div>
+  <div id="horarios"></div>
 
-<label>Horario</label>
-<div class="small">Seleccioná un horario disponible</div>
-<div id="horarios"></div>
+  <button onclick="mostrarResumen()">Confirmar reserva</button>
+  <div class="small-text">Se abrirá WhatsApp para confirmar</div>
 
-<button type="button" onclick="confirmar()">Confirmar reserva</button>
-<div class="small">Se abrirá WhatsApp para confirmar</div>
+  <button class="cancel" onclick="cancelarTurno()">Cancelar / Reprogramar</button>
+</div>
 
-<button type="button" class="cancel" onclick="cancelar()">Cancelar / Reprogramar</button>
+<!-- MODAL -->
+<div class="overlay" id="overlay"></div>
 
+<div class="modal" id="modalResumen">
+  <h3 style="text-align:center">Confirmar turno</h3>
+
+  <div class="resumen-item"><b>Servicio:</b> <span id="resServicio"></span></div>
+  <div class="resumen-item"><b>Fecha:</b> <span id="resFecha"></span></div>
+  <div class="resumen-item"><b>Hora:</b> <span id="resHora"></span></div>
+
+  <button onclick="confirmarYEnviar()">Confirmar</button>
+  <button class="btn-volver" onclick="cerrarResumen()">Volver</button>
 </div>
 
 <script>
-const telefono = "5491159527947";
+const telefono = "549XXXXXXXXXX";
 let horaSeleccionada = "";
 
-const nombre = document.getElementById("nombre");
-const servicio = document.getElementById("servicio");
-const fecha = document.getElementById("fecha");
-const horarios = document.getElementById("horarios");
-
 fecha.min = new Date().toISOString().split("T")[0];
-fecha.addEventListener("change", cargarHorarios);
 
 function cargarHorarios() {
   horarios.innerHTML = "";
   horaSeleccionada = "";
 
-  const dia = new Date(fecha.value + "T00:00:00").getDay();
+  const d = new Date(fecha.value + "T00:00:00").getDay();
 
-  if (dia === 0) {
-    horarios.innerHTML = "<div style='color:#888'>Domingos cerrado</div>";
+  if (d === 0) {
+    horarios.innerHTML = "<div style='font-size:13px;color:#888'>Domingos cerrado</div>";
     return;
   }
 
-  if (dia === 3 || dia === 5) {
+  if (d === 3 || d === 5) {
     generar("10:00","16:30");
     return;
   }
 
-  if (dia === 1 || dia === 2 || dia === 4) {
+  if (d === 1 || d === 2 || d === 4) {
     generar("09:00","13:00");
     generar("15:30","20:00");
     return;
   }
 
-  if (dia === 6) {
-    generar("09:00","20:00");
-  }
+  if (d === 6) generar("09:00","20:00");
 }
 
-function generar(inicio, fin) {
-  let [h,m] = inicio.split(":").map(Number);
-  let [hf,mf] = fin.split(":").map(Number);
+function generar(i,f) {
+  let [h,m]=i.split(":").map(Number);
+  let [hf,mf]=f.split(":").map(Number);
 
-  while (h < hf || (h === hf && m <= mf)) {
+  while (h<hf || (h===hf && m<=mf)) {
     const hora = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
     const b = document.createElement("button");
-    b.type = "button";
-    b.className = "hora-btn";
-    b.textContent = hora;
-    b.onclick = () => {
-      document.querySelectorAll(".hora-btn").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      horaSeleccionada = hora;
-    };
+    b.className="hora-btn";
+    b.textContent=hora;
+    b.onclick=()=>{document.querySelectorAll(".hora-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");horaSeleccionada=hora;}
     horarios.appendChild(b);
-
-    m += 30;
-    if (m === 60) { m = 0; h++; }
+    m+=30; if(m===60){m=0;h++}
   }
 }
 
-function confirmar() {
+function mostrarResumen() {
   if (!nombre.value || !servicio.value || !fecha.value || !horaSeleccionada) {
     alert("Completá todos los campos");
     return;
   }
 
- const fechaObj = new Date(fecha.value + "T00:00:00");
+  const f=new Date(fecha.value+"T00:00:00");
+  resServicio.textContent=servicio.value;
+  resFecha.textContent=`${String(f.getDate()).padStart(2,"0")}/${String(f.getMonth()+1).padStart(2,"0")}/${f.getFullYear()}`;
+  resHora.textContent=horaSeleccionada;
 
-  const dia = String(fechaObj.getDate()).padStart(2, "0");
-  const mes = String(fechaObj.getMonth() + 1).padStart(2, "0");
-  const anio = fechaObj.getFullYear();
-
-  const fechaFormateada = `${dia}/${mes}/${anio}`;
-
-  const ok = confirm(
-`Confirmar turno:
-
-Nombre: ${nombre.value}
-Servicio: ${servicio.value}
-Fecha: ${fechaFormateada}
-Hora: ${horaSeleccionada}`
-  );
-
-  if (!ok) return;
-
-  enviarWhatsApp();
-}
-  window.open(
-    `https://wa.me/${telefono}?text=${encodeURIComponent(
-      `Hola! Quiero reservar un turno.
-Nombre: ${nombre.value}
-Servicio: ${servicio.value}
-Fecha: ${fecha.value}
-Hora: ${horaSeleccionada}`
-    )}`,
-    "_blank"
-  );
+  overlay.classList.add("active");
+  modalResumen.classList.add("active");
 }
 
-function cancelar() {
-  window.open(
-    `https://wa.me/${telefono}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar un turno.")}`,
-    "_blank"
-  );
+function cerrarResumen() {
+  overlay.classList.remove("active");
+  modalResumen.classList.remove("active");
+}
+
+function confirmarYEnviar() {
+  cerrarResumen();
+  const f=new Date(fecha.value+"T00:00:00");
+  const msg=
+`Hola! Soy ${nombre.value}
+Servicio: ${servicio.value}
+Día: ${f.getDate()} de ${f.toLocaleString("es",{month:"long"})}
+Hora: ${horaSeleccionada}`;
+  window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(msg)}`,"_blank");
+}
+
+function cancelarTurno() {
+  window.open(`https://wa.me/${telefono}?text=Quiero cancelar o reprogramar mi turno`,"_blank");
 }
 </script>
 
 </body>
 </html>
+

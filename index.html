@@ -85,23 +85,11 @@ button {
   color: #fff;
 }
 
-/* MODAL */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.7);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-}
-
-.modal {
-  background: #1f1f1f;
-  padding: 25px;
-  width: 90%;
-  max-width: 350px;
-  border-radius: 14px;
+.small {
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+  margin-top: 6px;
 }
 </style>
 </head>
@@ -126,36 +114,24 @@ button {
 <input type="date" id="fecha">
 
 <label>Horario</label>
-<div style="font-size:13px;color:#aaa">Seleccioná un horario disponible</div>
+<div class="small">Seleccioná un horario disponible</div>
 <div id="horarios"></div>
 
-<button type="button" onclick="mostrarResumen()">Confirmar reserva</button>
-<button type="button" class="cancel" onclick="cancelarTurno()">Cancelar / Reprogramar</button>
+<button type="button" onclick="confirmar()">Confirmar reserva</button>
+<div class="small">Se abrirá WhatsApp para confirmar</div>
 
-</div>
+<button type="button" class="cancel" onclick="cancelar()">Cancelar / Reprogramar</button>
 
-<!-- MODAL -->
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <h3>Confirmar turno</h3>
-    <p><b id="resServicio"></b></p>
-    <p><b id="resFecha"></b></p>
-    <p><b id="resHora"></b></p>
-
-    <button type="button" onclick="confirmarYEnviar()">Confirmar</button>
-    <button type="button" class="cancel" onclick="cerrarResumen()">Volver</button>
-  </div>
 </div>
 
 <script>
-const telefonoBarberia = "5491159527947";
+const telefono = "5491159527947";
 let horaSeleccionada = "";
 
 const nombre = document.getElementById("nombre");
 const servicio = document.getElementById("servicio");
 const fecha = document.getElementById("fecha");
 const horarios = document.getElementById("horarios");
-const overlay = document.getElementById("overlay");
 
 fecha.min = new Date().toISOString().split("T")[0];
 fecha.addEventListener("change", cargarHorarios);
@@ -164,75 +140,83 @@ function cargarHorarios() {
   horarios.innerHTML = "";
   horaSeleccionada = "";
 
-  const d = new Date(fecha.value + "T00:00:00").getDay();
+  const dia = new Date(fecha.value + "T00:00:00").getDay();
 
-  if (d === 0) {
+  if (dia === 0) {
     horarios.innerHTML = "<div style='color:#888'>Domingos cerrado</div>";
     return;
   }
 
-  if (d === 3 || d === 5) {
-    generar("10:00","16:30"); return;
+  if (dia === 3 || dia === 5) {
+    generar("10:00","16:30");
+    return;
   }
 
-  if (d === 1 || d === 2 || d === 4) {
+  if (dia === 1 || dia === 2 || dia === 4) {
     generar("09:00","13:00");
     generar("15:30","20:00");
     return;
   }
 
-  if (d === 6) generar("09:00","20:00");
+  if (dia === 6) {
+    generar("09:00","20:00");
+  }
 }
 
-function generar(i,f) {
-  let [h,m] = i.split(":").map(Number);
-  let [hf,mf] = f.split(":").map(Number);
+function generar(inicio, fin) {
+  let [h,m] = inicio.split(":").map(Number);
+  let [hf,mf] = fin.split(":").map(Number);
 
-  while (h < hf || (h===hf && m<=mf)) {
+  while (h < hf || (h === hf && m <= mf)) {
     const hora = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
     const b = document.createElement("button");
+    b.type = "button";
     b.className = "hora-btn";
     b.textContent = hora;
-    b.onclick = ()=> {
+    b.onclick = () => {
       document.querySelectorAll(".hora-btn").forEach(x=>x.classList.remove("active"));
       b.classList.add("active");
       horaSeleccionada = hora;
     };
     horarios.appendChild(b);
-    m+=30; if(m===60){m=0;h++;}
+
+    m += 30;
+    if (m === 60) { m = 0; h++; }
   }
 }
 
-function mostrarResumen() {
-  if(!nombre.value || !servicio.value || !fecha.value || !horaSeleccionada){
-    alert("Completá todo");
+function confirmar() {
+  if (!nombre.value || !servicio.value || !fecha.value || !horaSeleccionada) {
+    alert("Completá todos los campos");
     return;
   }
 
-  document.getElementById("resServicio").textContent = servicio.value;
-  document.getElementById("resFecha").textContent = fecha.value;
-  document.getElementById("resHora").textContent = horaSeleccionada;
+  const ok = confirm(
+`Confirmar turno:
 
-  overlay.style.display = "flex";
-}
+Nombre: ${nombre.value}
+Servicio: ${servicio.value}
+Fecha: ${fecha.value}
+Hora: ${horaSeleccionada}`
+  );
 
-function cerrarResumen() {
-  overlay.style.display = "none";
-}
+  if (!ok) return;
 
-function confirmarYEnviar() {
-  cerrarResumen();
   window.open(
-    `https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(
-      `Hola! Quiero reservar un turno.\nNombre: ${nombre.value}\nServicio: ${servicio.value}\nFecha: ${fecha.value}\nHora: ${horaSeleccionada}`
+    `https://wa.me/${telefono}?text=${encodeURIComponent(
+      `Hola! Quiero reservar un turno.
+Nombre: ${nombre.value}
+Servicio: ${servicio.value}
+Fecha: ${fecha.value}
+Hora: ${horaSeleccionada}`
     )}`,
     "_blank"
   );
 }
 
-function cancelarTurno() {
+function cancelar() {
   window.open(
-    `https://wa.me/${telefonoBarberia}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar un turno.")}`,
+    `https://wa.me/${telefono}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar un turno.")}`,
     "_blank"
   );
 }

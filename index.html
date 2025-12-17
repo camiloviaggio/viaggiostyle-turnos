@@ -191,17 +191,27 @@ function confirmar() {
     return;
   }
 
+ const fechaObj = new Date(fecha.value + "T00:00:00");
+
+  const dia = String(fechaObj.getDate()).padStart(2, "0");
+  const mes = String(fechaObj.getMonth() + 1).padStart(2, "0");
+  const anio = fechaObj.getFullYear();
+
+  const fechaFormateada = `${dia}/${mes}/${anio}`;
+
   const ok = confirm(
 `Confirmar turno:
 
 Nombre: ${nombre.value}
 Servicio: ${servicio.value}
-Fecha: ${fecha.value}
+Fecha: ${fechaFormateada}
 Hora: ${horaSeleccionada}`
   );
 
   if (!ok) return;
 
+  enviarWhatsApp();
+}
   window.open(
     `https://wa.me/${telefono}?text=${encodeURIComponent(
       `Hola! Quiero reservar un turno.

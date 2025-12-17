@@ -91,6 +91,29 @@ button {
   text-align: center;
   margin-top: 6px;
 }
+  .container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Logo de fondo */
+.container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: viaggiostylelogo.png("logo.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 70%;
+  opacity: 0.04; /* ajustá este valor */
+  z-index: 0;
+}
+
+/* Asegura que el contenido quede arriba */
+.container > * {
+  position: relative;
+  z-index: 1;
+}
 </style>
 </head>
 

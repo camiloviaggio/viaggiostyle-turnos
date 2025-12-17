@@ -6,151 +6,124 @@
 <title>ViaggioStyle | Turnos</title>
 
 <style>
-* { box-sizing: border-box; }
+*{box-sizing:border-box}
 
-body {
-  margin: 0;
-  background: radial-gradient(circle at top, #1b1b1b, #000);
-  font-family: Arial, sans-serif;
-  color: #fff;
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#1b1b1b,#000);
+  font-family:Arial,sans-serif;
+  color:#fff;
 }
 
-header {
-  padding: 25px;
-  text-align: center;
-  font-size: 32px;
-  letter-spacing: 4px;
-  font-weight: bold;
+header{
+  padding:25px;
+  text-align:center;
+  font-size:32px;
+  letter-spacing:4px;
+  font-weight:bold;
 }
 
-.container {
-  max-width: 420px;
-  margin: 30px auto;
-  background: linear-gradient(180deg,#1f1f1f,#151515);
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,.6);
-  animation: fadeUp .4s ease;
+.container{
+  max-width:420px;
+  margin:30px auto;
+  background:linear-gradient(180deg,#1f1f1f,#151515);
+  padding:25px;
+  border-radius:16px;
+  box-shadow:0 20px 40px rgba(0,0,0,.6);
 }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+label{display:block;margin-top:18px;font-size:14px;color:#ddd}
+
+input,select{
+  width:100%;
+  padding:14px;
+  margin-top:6px;
+  border-radius:10px;
+  border:none;
+  font-size:16px;
 }
 
-label {
-  display: block;
-  margin-top: 18px;
-  font-size: 14px;
-  color: #ddd;
+#horarios{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+  gap:10px;
 }
 
-input, select {
-  width: 100%;
-  padding: 14px;
-  margin-top: 6px;
-  border-radius: 10px;
-  border: none;
-  font-size: 16px;
+.hora-btn{
+  padding:12px;
+  border-radius:10px;
+  background:#2a2a2a;
+  border:none;
+  color:#fff;
+  cursor:pointer;
 }
 
-#horarios {
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));
-  gap: 10px;
+.hora-btn.active{
+  background:#25d366;
+  color:#000;
 }
 
-.hora-btn {
-  padding: 12px;
-  border-radius: 10px;
-  background: #2a2a2a;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  transition: .2s;
+button{
+  width:100%;
+  padding:16px;
+  margin-top:25px;
+  background:#25d366;
+  border:none;
+  color:#000;
+  font-size:18px;
+  border-radius:14px;
+  cursor:pointer;
+  font-weight:bold;
 }
 
-.hora-btn:hover { background: #333; }
-
-.hora-btn.active {
-  background: #25d366;
-  color: #000;
-  transform: scale(1.05);
+.cancel{
+  background:#ff4d4d;
+  color:#fff;
 }
 
-button {
-  width: 100%;
-  padding: 16px;
-  margin-top: 25px;
-  background: #25d366;
-  border: none;
-  color: #000;
-  font-size: 18px;
-  border-radius: 14px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.cancel {
-  background: #ff4d4d;
-  color: #fff;
-}
-
-.small-text {
-  text-align: center;
-  font-size: 12px;
-  color: #aaa;
-  margin-top: 6px;
-}
-
-/* OVERLAY */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.65);
-  opacity: 0;
-  pointer-events: none;
-  transition: .3s;
-  z-index: 100;
-}
-
-.overlay.active {
-  opacity: 1;
-  pointer-events: auto;
+.small-text{
+  text-align:center;
+  font-size:12px;
+  color:#aaa;
+  margin-top:6px;
 }
 
 /* MODAL */
-.modal {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -40%);
-  background: linear-gradient(180deg,#1f1f1f,#141414);
-  padding: 25px;
-  width: 90%;
-  max-width: 360px;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,.7);
-  opacity: 0;
-  transition: .3s ease;
-  z-index: 101;
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  opacity:0;
+  pointer-events:none;
+  transition:.3s;
 }
 
-.modal.active {
-  opacity: 1;
-  transform: translate(-50%, -50%);
+.overlay.active{
+  opacity:1;
+  pointer-events:auto;
 }
 
-.resumen-item {
-  margin-bottom: 12px;
-  font-size: 15px;
+.modal{
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-40%);
+  background:#1f1f1f;
+  padding:25px;
+  width:90%;
+  max-width:360px;
+  border-radius:16px;
+  opacity:0;
+  transition:.3s;
 }
 
-.btn-volver {
-  background: #2a2a2a;
-  color: #fff;
+.modal.active{
+  opacity:1;
+  transform:translate(-50%,-50%);
 }
+
+.resumen-item{margin-bottom:12px}
 </style>
 </head>
 
@@ -159,122 +132,104 @@ button {
 <header>VIAGGIOSTYLE</header>
 
 <div class="container">
-  <label>Nombre completo</label>
-  <input id="nombre">
+<label>Nombre</label>
+<input id="nombre">
 
-  <label>Servicio</label>
-  <select id="servicio">
-    <option value="">Seleccionar</option>
-    <option>Corte</option>
-    <option>Corte + Barba</option>
-  </select>
+<label>Servicio</label>
+<select id="servicio">
+<option value="">Seleccionar</option>
+<option>Corte</option>
+<option>Corte + Barba</option>
+</select>
 
-  <label>Día</label>
-  <input type="date" id="fecha" onchange="cargarHorarios()">
+<label>Día</label>
+<input type="date" id="fecha" onchange="cargarHorarios()">
 
-  <label>Horario</label>
-  <div style="font-size:13px;color:#bbb">Seleccioná un horario disponible</div>
-  <div id="horarios"></div>
+<label>Horario</label>
+<div id="horarios"></div>
 
-  <button onclick="mostrarResumen()">Confirmar reserva</button>
-  <div class="small-text">Se abrirá WhatsApp para confirmar</div>
+<button onclick="mostrarResumen()">Confirmar reserva</button>
+<div class="small-text">Se abrirá WhatsApp al confirmar</div>
 
-  <button class="cancel" onclick="cancelarTurno()">Cancelar / Reprogramar</button>
+<button class="cancel" onclick="cancelarTurno()">Cancelar / Reprogramar</button>
 </div>
 
 <!-- MODAL -->
 <div class="overlay" id="overlay"></div>
-
-<div class="modal" id="modalResumen">
-  <h3 style="text-align:center">Confirmar turno</h3>
-
-  <div class="resumen-item"><b>Servicio:</b> <span id="resServicio"></span></div>
-  <div class="resumen-item"><b>Fecha:</b> <span id="resFecha"></span></div>
-  <div class="resumen-item"><b>Hora:</b> <span id="resHora"></span></div>
-
-  <button onclick="confirmarYEnviar()">Confirmar</button>
-  <button class="btn-volver" onclick="cerrarResumen()">Volver</button>
+<div class="modal" id="modal">
+  <h3>Confirmar turno</h3>
+  <div class="resumen-item">Servicio: <span id="rServicio"></span></div>
+  <div class="resumen-item">Fecha: <span id="rFecha"></span></div>
+  <div class="resumen-item">Hora: <span id="rHora"></span></div>
+  <button onclick="enviarWhatsApp()">Confirmar</button>
+  <button class="cancel" onclick="cerrarModal()">Volver</button>
 </div>
 
 <script>
-const telefono = "549XXXXXXXXXX";
-let horaSeleccionada = "";
+const telefono="54911XXXXXXXX";
+let horaSeleccionada="";
 
-fecha.min = new Date().toISOString().split("T")[0];
+fecha.min=new Date().toISOString().split("T")[0];
 
-function cargarHorarios() {
-  horarios.innerHTML = "";
-  horaSeleccionada = "";
+function cargarHorarios(){
+  horarios.innerHTML="";
+  horaSeleccionada="";
+  const f=new Date(fecha.value+"T00:00:00");
+  const d=f.getDay();
 
-  const d = new Date(fecha.value + "T00:00:00").getDay();
+  if(d===0){horarios.innerHTML="Domingo cerrado";return;}
 
-  if (d === 0) {
-    horarios.innerHTML = "<div style='font-size:13px;color:#888'>Domingos cerrado</div>";
-    return;
-  }
-
-  if (d === 3 || d === 5) {
-    generar("10:00","16:30");
-    return;
-  }
-
-  if (d === 1 || d === 2 || d === 4) {
-    generar("09:00","13:00");
-    generar("15:30","20:00");
-    return;
-  }
-
-  if (d === 6) generar("09:00","20:00");
+  if(d===3||d===5) gen("10:00","16:30");
+  else if(d===1||d===2||d===4){
+    gen("09:00","13:00");
+    gen("15:30","20:00");
+  } else gen("09:00","20:00");
 }
 
-function generar(i,f) {
-  let [h,m]=i.split(":").map(Number);
-  let [hf,mf]=f.split(":").map(Number);
-
-  while (h<hf || (h===hf && m<=mf)) {
-    const hora = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-    const b = document.createElement("button");
+function gen(i,f){
+  let[h,m]=i.split(":").map(Number);
+  let[H,M]=f.split(":").map(Number);
+  while(h<H||(h===H&&m<=M)){
+    const t=`${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}`;
+    const b=document.createElement("button");
     b.className="hora-btn";
-    b.textContent=hora;
-    b.onclick=()=>{document.querySelectorAll(".hora-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");horaSeleccionada=hora;}
+    b.textContent=t;
+    b.onclick=()=>{document.querySelectorAll(".hora-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");horaSeleccionada=t;}
     horarios.appendChild(b);
-    m+=30; if(m===60){m=0;h++}
+    m+=30;if(m==60){m=0;h++}
   }
 }
 
-function mostrarResumen() {
-  if (!nombre.value || !servicio.value || !fecha.value || !horaSeleccionada) {
-    alert("Completá todos los campos");
-    return;
+function mostrarResumen(){
+  if(!nombre.value||!servicio.value||!fecha.value||!horaSeleccionada){
+    alert("Completá todos los campos");return;
   }
-
   const f=new Date(fecha.value+"T00:00:00");
-  resServicio.textContent=servicio.value;
-  resFecha.textContent=`${String(f.getDate()).padStart(2,"0")}/${String(f.getMonth()+1).padStart(2,"0")}/${f.getFullYear()}`;
-  resHora.textContent=horaSeleccionada;
-
+  rServicio.textContent=servicio.value;
+  rFecha.textContent=`${f.getDate()}/${f.getMonth()+1}/${f.getFullYear()}`;
+  rHora.textContent=horaSeleccionada;
   overlay.classList.add("active");
-  modalResumen.classList.add("active");
+  modal.classList.add("active");
 }
 
-function cerrarResumen() {
+function cerrarModal(){
   overlay.classList.remove("active");
-  modalResumen.classList.remove("active");
+  modal.classList.remove("active");
 }
 
-function confirmarYEnviar() {
-  cerrarResumen();
-  const f=new Date(fecha.value+"T00:00:00");
-  const msg=
-`Hola! Soy ${nombre.value}
+function enviarWhatsApp(){
+  const msg=`Hola! Soy ${nombre.value}.
+Quiero reservar un turno.
+
 Servicio: ${servicio.value}
-Día: ${f.getDate()} de ${f.toLocaleString("es",{month:"long"})}
+Fecha: ${fecha.value}
 Hora: ${horaSeleccionada}`;
-  window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(msg)}`,"_blank");
+  window.open("https://wa.me/"+telefono+"?text="+encodeURIComponent(msg));
+  cerrarModal();
 }
 
-function cancelarTurno() {
-  window.open(`https://wa.me/${telefono}?text=Quiero cancelar o reprogramar mi turno`,"_blank");
+function cancelarTurno(){
+  window.open("https://wa.me/"+telefono+"?text=Quiero cancelar o reprogramar mi turno");
 }
 </script>
 

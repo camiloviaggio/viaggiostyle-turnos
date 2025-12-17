@@ -101,18 +101,37 @@ button {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("viaggiostylelogo.png");
+  background-image: url("logo.png");
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 80%;
-  opacity: 0.12; /* ajustá este valor */
+  background-size: 70%;
+  opacity: 0.03;
   z-index: 0;
 }
+
 
 /* Asegura que el contenido quede arriba */
 .container > * {
   position: relative;
   z-index: 1;
+}
+  .container label,
+.container h2,
+.container input,
+.container select,
+.container div {
+  color: #fff;
+}
+  /* Ajuste final logo fondo */
+.container::before {
+  background-size: 60%;
+  opacity: 0.025;
+}
+
+/* Forzar texto blanco */
+.container,
+.container * {
+  color: #fff;
 }
 </style>
 </head>

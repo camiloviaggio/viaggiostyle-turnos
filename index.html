@@ -10,8 +10,8 @@
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #1b1b1b, #000);
   font-family: Arial, sans-serif;
+  background: radial-gradient(circle at top, #1b1b1b, #000);
   color: #fff;
 }
 
@@ -39,8 +39,8 @@ header {
 }
 
 label {
-  margin-top: 18px;
   display: block;
+  margin-top: 18px;
   font-size: 14px;
   color: #ddd;
 }
@@ -114,6 +114,7 @@ button {
   transition: .3s;
   z-index: 100;
 }
+
 .overlay.active {
   opacity: 1;
   pointer-events: auto;
@@ -142,7 +143,6 @@ button {
 </style>
 </head>
 
-
 <body>
 
 <header>VIAGGIOSTYLE</header>
@@ -150,7 +150,7 @@ button {
 <div class="container">
 
 <label>Nombre completo</label>
-<input id="nombre">
+<input id="nombre" placeholder="Tu nombre y apellido">
 
 <label>Servicio</label>
 <select id="servicio">
@@ -160,29 +160,30 @@ button {
 </select>
 
 <label>Día</label>
-<input type="date" id="fecha" onchange="cargarHorarios()">
+<input type="date" id="fecha">
 
 <label>Horario</label>
 <div style="font-size:13px;color:#bbb">Seleccioná un horario disponible</div>
 <div id="horarios"></div>
 
-<button onclick="mostrarResumen()">Confirmar reserva</button>
+<button type="button" onclick="mostrarResumen()">Confirmar reserva</button>
 <div class="small-text">Se abrirá WhatsApp para confirmar</div>
 
-<button class="cancel" onclick="cancelarTurno()">Cancelar / Reprogramar</button>
+<button type="button" class="cancel" onclick="cancelarTurno()">Cancelar / Reprogramar</button>
 
 </div>
 
 <!-- MODAL -->
 <div class="overlay" id="overlay" onclick="cerrarResumen()"></div>
+
 <div class="modal" id="modal">
   <h3>Confirmar turno</h3>
   <p>Servicio: <b id="resServicio"></b></p>
   <p>Día: <b id="resFecha"></b></p>
   <p>Hora: <b id="resHora"></b></p>
 
-  <button onclick="confirmarYEnviar()">Confirmar</button>
-  <button class="cancel" onclick="cerrarResumen()">Volver</button>
+  <button type="button" onclick="confirmarYEnviar()">Confirmar</button>
+  <button type="button" class="cancel" onclick="cerrarResumen()">Volver</button>
 </div>
 
 <script>
@@ -197,6 +198,7 @@ const overlay = document.getElementById("overlay");
 const modal = document.getElementById("modal");
 
 fechaInput.min = new Date().toISOString().split("T")[0];
+fechaInput.addEventListener("change", cargarHorarios);
 
 function cargarHorarios() {
   horariosDiv.innerHTML = "";
@@ -211,31 +213,32 @@ function cargarHorarios() {
   }
 
   if (dia === 3 || dia === 5) {
-    generarHoras("10:00","16:30");
+    generarHoras("10:00", "16:30");
     return;
   }
 
   if (dia === 1 || dia === 2 || dia === 4) {
-    generarHoras("09:00","13:00");
-    generarHoras("15:30","20:00");
+    generarHoras("09:00", "13:00");
+    generarHoras("15:30", "20:00");
     return;
   }
 
   if (dia === 6) {
-    generarHoras("09:00","20:00");
+    generarHoras("09:00", "20:00");
   }
 }
 
 function generarHoras(inicio, fin) {
-  let [h,m] = inicio.split(":").map(Number);
-  let [hf,mf] = fin.split(":").map(Number);
+  let [h, m] = inicio.split(":").map(Number);
+  let [hf, mf] = fin.split(":").map(Number);
 
   while (h < hf || (h === hf && m <= mf)) {
     const hora = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
     const btn = document.createElement("button");
+    btn.type = "button";
     btn.className = "hora-btn";
     btn.textContent = hora;
-    btn.onclick = () => seleccionarHora(btn,hora);
+    btn.onclick = () => seleccionarHora(btn, hora);
     horariosDiv.appendChild(btn);
 
     m += 30;
@@ -243,28 +246,15 @@ function generarHoras(inicio, fin) {
   }
 }
 
-function seleccionarHora(btn,hora) {
-  document.querySelectorAll(".hora-btn").forEach(b=>b.classList.remove("active"));
+function seleccionarHora(btn, hora) {
+  document.querySelectorAll(".hora-btn").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   horaSeleccionada = hora;
 }
 
-function reservarTurno() {
-  const mensaje =
-`Hola! Quiero reservar un turno.
-Nombre: ${nombreInput.value}
-Servicio: ${servicioInput.value}
-Fecha: ${fechaInput.value}
-Hora: ${horaSeleccionada}`;
-
-  window.open(`https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`,"_blank");
-}
-
-function cancelarTurno() {
-  window.open(`https://wa.me/${telefonoBarberia}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar un turno.")}`,"_blank");
 function mostrarResumen() {
   if (!nombreInput.value || !servicioInput.value || !fechaInput.value || !horaSeleccionada) {
-    alert("Completá todos los campos");
+    alert("Completá todos los campos y seleccioná un horario");
     return;
   }
 
@@ -288,6 +278,27 @@ function confirmarYEnviar() {
   cerrarResumen();
   reservarTurno();
 }
+
+function reservarTurno() {
+  const mensaje =
+`Hola! Quiero reservar un turno en ViaggioStyle.
+
+Nombre: ${nombreInput.value}
+Servicio: ${servicioInput.value}
+Fecha: ${fechaInput.value}
+Hora: ${horaSeleccionada}`;
+
+  window.open(
+    `https://wa.me/${telefonoBarberia}?text=${encodeURIComponent(mensaje)}`,
+    "_blank"
+  );
+}
+
+function cancelarTurno() {
+  window.open(
+    `https://wa.me/${telefonoBarberia}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar un turno.")}`,
+    "_blank"
+  );
 }
 </script>
 

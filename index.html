@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="icon" href="logo.ico"
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ViaggioStyle | Turnos</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f0f0f;
+  color: #fff;
+}
+
+header {
+  padding: 25px;
+  text-align: center;
+  font-size: 30px;
+  letter-spacing: 4px;
+  font-weight: bold;
+}
+
+.container {
+  max-width: 420px;
+  margin: 30px auto;
+  background: #1a1a1a;
+  padding: 25px;
+  border-radius: 16px;
+}
+
+label {
+  display: block;
+  margin-top: 18px;
+  font-size: 14px;
+}
+
+input, select {
+  width: 100%;
+  padding: 14px;
+  margin-top: 6px;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+}
+
+#horarios {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));
+  gap: 10px;
+}
+
+.hora-btn {
+  padding: 12px;
+  border-radius: 10px;
+  background: #333;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.hora-btn.active {
+  background: #25d366;
+  color: #000;
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  margin-top: 20px;
+  background: #25d366;
+  border: none;
+  color: #000;
+  font-size: 17px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.cancel {
+  background: #ff4d4d;
+  color: #fff;
+}
+
+.small {
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+  margin-top: 6px;
+}
+  .container {
+  position: relative;
+  overflow: hidden;
+}
+  .container {
+  position: relative;
+  overflow: hidden;
+}
+</style>
+</head>
+
+<body>
+
+<header>VIAGGIOSTYLE</header>
+
+<div class="container">
+
+<label>Nombre completo</label>
+<input id="nombre">
+
+<label>Servicio</label>
+<select id="servicio">
+  <option value="">Seleccionar</option>
+  <option>Corte</option>
+  <option>Corte + Barba</option>
+</select>
+
+<label>Día</label>
+<input type="date" id="fecha">
+
+<label>Horario</label>
+<div class="small">Seleccioná un horario disponible</div>
+<div id="horarios"></div>
+
+<button type="button" onclick="confirmar()">Confirmar reserva</button>
+<div class="small">Se abrirá WhatsApp para confirmar</div>
+
+<button type="button" class="cancel" onclick="cancelar()">Cancelar / Reprogramar</button>
+
+</div>
+
+<script>
+const telefono = "5491159527947";
+let horaSeleccionada = "";
+
+const nombre = document.getElementById("nombre");
+const servicio = document.getElementById("servicio");
+const fecha = document.getElementById("fecha");
+const horarios = document.getElementById("horarios");
+
+fecha.min = new Date().toISOString().split("T")[0];
+fecha.addEventListener("change", cargarHorarios);
+
+function cargarHorarios() {
+  horarios.innerHTML = "";
+  horaSeleccionada = "";
+
+  const dia = new Date(fecha.value + "T00:00:00").getDay();
+
+  if (dia === 0) {
+    horarios.innerHTML = "<div style='color:#888'>Domingos cerrado</div>";
+    return;
+  }
+
+  if (dia === 3 || dia === 5) {
+    generar("10:00","16:30");
+    return;
+  }
+
+  if (dia === 1 || dia === 2 || dia === 4) {
+    generar("09:00","13:00");
+    generar("15:30","20:00");
+    return;
+  }
+
+  if (dia === 6) {
+    generar("09:00","20:00");
+  }
+}
+
+function generar(inicio, fin) {
+  let [h,m] = inicio.split(":").map(Number);
+  let [hf,mf] = fin.split(":").map(Number);
+
+  while (h < hf || (h === hf && m <= mf)) {
+    const hora = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "hora-btn";
+    b.textContent = hora;
+    b.onclick = () => {
+      document.querySelectorAll(".hora-btn").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      horaSeleccionada = hora;
+    };
+    horarios.appendChild(b);
+
+    m += 30;
+    if (m === 60) { m = 0; h++; }
+  }
+}
+
+function confirmar() {
+  if (!nombre.value || !servicio.value || !fecha.value || !horaSeleccionada) {
+    alert("Completá todos los campos");
+    return;
+  }
+
+  const ok = confirm(
+`Confirmar reserva:
+
+Nombre: ${nombre.value}
+Servicio: ${servicio.value}
+Fecha: ${fecha.value}
+Hora: ${horaSeleccionada}`
+  );
+
+  if (!ok) return;
+
+  window.open(
+    `https://wa.me/${telefono}?text=${encodeURIComponent(
+      `Hola! Quiero reservar un turno.
+Nombre: ${nombre.value}
+Servicio: ${servicio.value}
+Fecha: ${fecha.value}
+Hora: ${horaSeleccionada}`
+    )}`,
+    "_blank"
+  );
+}
+
+function cancelar() {
+  window.open(
+    `https://wa.me/${telefono}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar un turno.")}`,
+    "_blank"
+  );
+}
+</script>
+
+</body>
+</html>
+

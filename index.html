@@ -105,6 +105,11 @@ button {
   color: #aaa;
   cursor: not-allowed;
 }
+  .hora-btn.ocupado {
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
 </style>
 </head>
 
@@ -207,7 +212,6 @@ function confirmar() {
 
   const ok = confirm(
 `Confirmar reserva:
-
 Nombre: ${nombre.value}
 Servicio: ${servicio.value}
 Fecha: ${fecha.value}
@@ -216,7 +220,6 @@ Hora: ${horaSeleccionada}`
 
   if (!ok) return;
 
-  // 1️⃣ Llamada al backend para reservar
   fetch('http://localhost:3000/reservar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -230,8 +233,8 @@ Hora: ${horaSeleccionada}`
   .then(res => res.json())
   .then(data => {
     if (data.message === "Turno reservado") {
+      actualizarTurnos(); // bloquea el botón inmediatamente
       alert("Turno reservado correctamente!");
-      actualizarTurnos(); // Actualiza la UI
     } else {
       alert(data.message);
     }
@@ -241,7 +244,7 @@ Hora: ${horaSeleccionada}`
     alert("Error al reservar turno");
   });
 
-  // 2️⃣ Abrir WhatsApp
+  // WhatsApp sigue igual
   window.open(
     `https://wa.me/${telefono}?text=${encodeURIComponent(
       `Hola! Quiero reservar un turno.
@@ -253,7 +256,6 @@ Hora: ${horaSeleccionada}`
     "_blank"
   );
 }
-
 function cancelar() {
   window.open(
     `https://wa.me/${telefono}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar un turno.")}`,
@@ -269,14 +271,14 @@ function actualizarTurnos() {
     .then(turnos => {
       document.querySelectorAll(".hora-btn").forEach(boton => {
         const hora = boton.textContent;
-        const ocupado = turnos.some(t => t.hora === hora && !t.disponible);
-        if (ocupado) {
+        const turnoOcupado = turnos.find(t => t.hora === hora && !t.disponible);
+        if (turnoOcupado) {
           boton.classList.add("ocupado");
           boton.onclick = null; // bloquea click
         } else {
           boton.classList.remove("ocupado");
           boton.onclick = () => {
-            document.querySelectorAll(".hora-btn").forEach(x=>x.classList.remove("active"));
+            document.querySelectorAll(".hora-btn").forEach(x => x.classList.remove("active"));
             boton.classList.add("active");
             horaSeleccionada = hora;
           };
@@ -286,43 +288,12 @@ function actualizarTurnos() {
     .catch(err => console.error(err));
 }
 
-// Llamamos a actualizarTurnos cada vez que cambia la fecha
+// Llamar a actualizarTurnos cada vez que se cambia la fecha
 fecha.addEventListener("change", () => {
-  cargarHorarios(); // tu función original
-  setTimeout(actualizarTurnos, 100); // espera a que se creen los botones
-});
-  function actualizarTurnos() {
-  if (!fecha.value) return;
-
-  fetch(`http://localhost:3000/turnos?fecha=${fecha.value}`)
-    .then(res => res.json())
-    .then(turnos => {
-      document.querySelectorAll(".hora-btn").forEach(boton => {
-        const hora = boton.textContent;
-        const ocupado = turnos.some(t => t.hora === hora && !t.disponible);
-        if (ocupado) {
-          boton.classList.add("ocupado");
-          boton.onclick = null; // bloquea click
-        } else {
-          boton.classList.remove("ocupado");
-          boton.onclick = () => {
-            document.querySelectorAll(".hora-btn").forEach(x=>x.classList.remove("active"));
-            boton.classList.add("active");
-            horaSeleccionada = hora;
-          };
-        }
-      });
-    })
-    .catch(err => console.error(err));
-}
-
-// Llamamos a actualizarTurnos cada vez que cambia la fecha
-fecha.addEventListener("change", () => {
-  cargarHorarios(); // tu función original
-  setTimeout(actualizarTurnos, 100); // espera a que se creen los botones
+  cargarHorarios();
+  setTimeout(actualizarTurnos, 100);
 });
 </script>
-
 </body>
 </html>
 

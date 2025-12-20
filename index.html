@@ -14,6 +14,7 @@ body {
   font-family: Arial, sans-serif;
   background: #0f0f0f;
   color: #fff;
+  transition: background 0.3s;
 }
 
 header {
@@ -22,6 +23,8 @@ header {
   font-size: 30px;
   letter-spacing: 4px;
   font-weight: bold;
+  animation: fadeDown 0.8s ease forwards;
+  opacity: 0;
 }
 
 .container {
@@ -30,6 +33,18 @@ header {
   background: #1a1a1a;
   padding: 25px;
   border-radius: 16px;
+  animation: fadeUp 0.8s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeDown {
+  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-20px); }
+}
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(20px); }
 }
 
 label {
@@ -45,6 +60,12 @@ input, select {
   border-radius: 10px;
   border: none;
   font-size: 16px;
+  transition: box-shadow 0.3s;
+}
+
+input:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 8px #25d366;
 }
 
 #horarios {
@@ -61,6 +82,13 @@ input, select {
   border: none;
   color: #fff;
   cursor: pointer;
+  transition: all 0.3s;
+}
+
+.hora-btn:hover:not(.ocupado) {
+  background: #25d366;
+  color: #000;
+  transform: scale(1.05);
 }
 
 .hora-btn.active {
@@ -72,6 +100,7 @@ input, select {
   background-color: #555;
   color: #aaa;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 button {
@@ -85,6 +114,11 @@ button {
   border-radius: 14px;
   cursor: pointer;
   font-weight: bold;
+  transition: all 0.3s;
+}
+
+button:hover {
+  transform: scale(1.03);
 }
 
 .cancel {
@@ -103,12 +137,18 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
+  animation: fadeUp 0.8s ease forwards;
 }
 
 table th, table td {
   padding: 6px;
   border-bottom: 1px solid #555;
   text-align: left;
+  transition: background 0.3s;
+}
+
+table tr:hover {
+  background: #2a2a2a;
 }
 </style>
 </head>
@@ -155,11 +195,10 @@ table th, table td {
       <th>Nombre</th>
       <th>Servicio</th>
       <th>Disponible</th>
+      <th>Acción</th>
     </tr>
   </thead>
-  <tbody>
-    <!-- Turnos se cargan aquí -->
-  </tbody>
+  <tbody></tbody>
 </table>
 
 </div>
@@ -177,10 +216,7 @@ const fechaAdmin = document.getElementById("fechaAdmin");
 const tablaTurnos = document.getElementById("tablaTurnos").querySelector("tbody");
 
 fecha.min = new Date().toISOString().split("T")[0];
-fecha.addEventListener("change", () => {
-  cargarHorarios();
-  setTimeout(actualizarTurnos, 100);
-});
+fecha.addEventListener("change", () => { cargarHorarios(); setTimeout(actualizarTurnos, 100); });
 
 fechaAdmin.min = new Date().toISOString().split("T")[0];
 fechaAdmin.addEventListener("change", cargarTurnosAdmin);
@@ -234,9 +270,7 @@ function generar(inicio, fin) {
   }
 }
 
-// =======================
-// BLOQUEO AUTOMÁTICO DE TURNOS
-// =======================
+// BLOQUEO DE TURNOS OCUPADOS
 function actualizarTurnos() {
   if (!fecha.value) return;
 
@@ -262,9 +296,7 @@ function actualizarTurnos() {
     .catch(err => console.error(err));
 }
 
-// =======================
-// PANEL DE ADMINISTRACIÓN
-// =======================
+// PANEL ADMINISTRACIÓN
 function cargarTurnosAdmin() {
   if (!fechaAdmin.value) return;
 
@@ -280,6 +312,9 @@ function cargarTurnosAdmin() {
           <td>${t.nombre}</td>
           <td>${t.servicio}</td>
           <td>${t.disponible ? "Sí" : "No"}</td>
+          <td>
+            ${t.disponible ? "" : `<button onclick="cancelarTurno(${t.id})" style="padding:4px 8px; border:none; border-radius:6px; background:#ff4d4d; color:#fff; cursor:pointer;">Cancelar</button>`}
+          </td>
         `;
         tablaTurnos.appendChild(fila);
       });
@@ -287,9 +322,29 @@ function cargarTurnosAdmin() {
     .catch(err => console.error(err));
 }
 
-// =======================
-// FUNCIONES DE RESERVA Y CANCELACIÓN
-// =======================
+// CANCELAR DESDE PANEL
+function cancelarTurno(id) {
+  const ok = confirm("¿Deseás cancelar este turno?");
+  if (!ok) return;
+
+  fetch('http://localhost:3000/cancelar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    actualizarTurnos();
+    cargarTurnosAdmin();
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Error al cancelar turno");
+  });
+}
+
+// RESERVA NORMAL
 function confirmar() {
   if (!nombre.value || !servicio.value || !fecha.value || !horaSeleccionada) {
     alert("Completá todos los campos");

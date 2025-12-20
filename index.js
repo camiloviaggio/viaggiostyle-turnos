@@ -1,7 +1,5 @@
-// =======================
-// Cargar variables de entorno
-// =======================
-require('dotenv').config();
+// index.js
+require('dotenv').config(); // Cargar variables de entorno
 
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
@@ -12,17 +10,16 @@ const app = express();
 const prisma = new PrismaClient();
 
 app.use(bodyParser.json());
-app.use(cors()); // Para que puedas conectar con tu frontend si está en otra URL
+app.use(cors());
 
 // =======================
-// ENDPOINT: Obtener todos los turnos
+// ENDPOINT: Obtener todos los turnos por fecha
 // =======================
 app.get('/turnos', async (req, res) => {
-  const { fecha } = req.query; // recibimos la fecha del frontend
+  const { fecha } = req.query;
   try {
     let where = {};
     if (fecha) {
-      // filtramos turnos de esa fecha exacta
       const fechaInicio = new Date(fecha + "T00:00:00");
       const fechaFin = new Date(fecha + "T23:59:59");
       where.fecha = { gte: fechaInicio, lte: fechaFin };
@@ -39,6 +36,7 @@ app.get('/turnos', async (req, res) => {
     res.status(500).json({ message: 'Error al obtener turnos' });
   }
 });
+
 // =======================
 // ENDPOINT: Reservar un turno
 // =======================
@@ -46,7 +44,6 @@ app.post('/reservar', async (req, res) => {
   const { nombre, servicio, fecha, hora } = req.body;
 
   try {
-    // Buscamos un turno disponible en esa fecha y hora
     const turnoExistente = await prisma.turno.findFirst({
       where: { fecha: new Date(fecha), hora, disponible: true }
     });
@@ -55,7 +52,6 @@ app.post('/reservar', async (req, res) => {
       return res.status(400).json({ message: 'Turno no disponible' });
     }
 
-    // Actualizamos el turno a ocupado
     const turno = await prisma.turno.update({
       where: { id: turnoExistente.id },
       data: { nombre, servicio, disponible: false }
@@ -90,7 +86,7 @@ app.post('/cancelar', async (req, res) => {
 // =======================
 // INICIAR SERVIDOR
 // =======================
-const PORT = process.env.PORT || 3000; // ahora toma la variable de entorno si existe
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

@@ -110,6 +110,11 @@ button {
   color: #aaa;
   cursor: not-allowed;
 }
+  .hora-btn.ocupado {
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
 </style>
 </head>
 
@@ -274,7 +279,7 @@ function actualizarTurnos() {
         const turnoOcupado = turnos.find(t => t.hora === hora && !t.disponible);
         if (turnoOcupado) {
           boton.classList.add("ocupado");
-          boton.onclick = null; // bloquea click
+          boton.onclick = null;
         } else {
           boton.classList.remove("ocupado");
           boton.onclick = () => {
@@ -288,7 +293,7 @@ function actualizarTurnos() {
     .catch(err => console.error(err));
 }
 
-// Llamar a actualizarTurnos cada vez que se cambia la fecha
+// Llamar a actualizarTurnos al cambiar la fecha
 fecha.addEventListener("change", () => {
   cargarHorarios();
   setTimeout(actualizarTurnos, 100);

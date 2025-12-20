@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <link rel="icon" href="logo.ico"
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ViaggioStyle | Turnos</title>
+<link rel="icon" href="logo.ico">
 
 <style>
 * { box-sizing: border-box; }
@@ -68,6 +68,12 @@ input, select {
   color: #000;
 }
 
+.hora-btn.ocupado {
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
 button {
   width: 100%;
   padding: 16px;
@@ -91,29 +97,6 @@ button {
   color: #aaa;
   text-align: center;
   margin-top: 6px;
-}
-  .container {
-  position: relative;
-  overflow: hidden;
-}
-  .container {
-  position: relative;
-  overflow: hidden;
-}
-  .hora-btn.ocupado {
-  background-color: #555; /* gris = ocupado */
-  color: #aaa;
-  cursor: not-allowed;
-}
-  .hora-btn.ocupado {
-  background-color: #555;
-  color: #aaa;
-  cursor: not-allowed;
-}
-  .hora-btn.ocupado {
-  background-color: #555;
-  color: #aaa;
-  cursor: not-allowed;
 }
 </style>
 </head>
@@ -158,7 +141,10 @@ const fecha = document.getElementById("fecha");
 const horarios = document.getElementById("horarios");
 
 fecha.min = new Date().toISOString().split("T")[0];
-fecha.addEventListener("change", cargarHorarios);
+fecha.addEventListener("change", () => {
+  cargarHorarios();
+  setTimeout(actualizarTurnos, 100);
+});
 
 function cargarHorarios() {
   horarios.innerHTML = "";
@@ -209,65 +195,9 @@ function generar(inicio, fin) {
   }
 }
 
-function confirmar() {
-  if (!nombre.value || !servicio.value || !fecha.value || !horaSeleccionada) {
-    alert("Completá todos los campos");
-    return;
-  }
-
-  const ok = confirm(
-`Confirmar reserva:
-Nombre: ${nombre.value}
-Servicio: ${servicio.value}
-Fecha: ${fecha.value}
-Hora: ${horaSeleccionada}`
-  );
-
-  if (!ok) return;
-
-  fetch('http://localhost:3000/reservar', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      nombre: nombre.value,
-      servicio: servicio.value,
-      fecha: fecha.value,
-      hora: horaSeleccionada
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.message === "Turno reservado") {
-      actualizarTurnos(); // bloquea el botón inmediatamente
-      alert("Turno reservado correctamente!");
-    } else {
-      alert(data.message);
-    }
-  })
-  .catch(err => {
-    console.error(err);
-    alert("Error al reservar turno");
-  });
-
-  // WhatsApp sigue igual
-  window.open(
-    `https://wa.me/${telefono}?text=${encodeURIComponent(
-      `Hola! Quiero reservar un turno.
-Nombre: ${nombre.value}
-Servicio: ${servicio.value}
-Fecha: ${fecha.value}
-Hora: ${horaSeleccionada}`
-    )}`,
-    "_blank"
-  );
-}
-function cancelar() {
-  window.open(
-    `https://wa.me/${telefono}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar un turno.")}`,
-    "_blank"
-  );
-}
-  // Función para actualizar turnos ocupados desde el backend
+// =======================
+// BLOQUEO AUTOMÁTICO DE TURNOS
+// =======================
 function actualizarTurnos() {
   if (!fecha.value) return;
 
@@ -293,12 +223,71 @@ function actualizarTurnos() {
     .catch(err => console.error(err));
 }
 
-// Llamar a actualizarTurnos al cambiar la fecha
-fecha.addEventListener("change", () => {
-  cargarHorarios();
-  setTimeout(actualizarTurnos, 100);
-});
+// =======================
+// FUNCIONES DE RESERVA Y CANCELACIÓN
+// =======================
+function confirmar() {
+  if (!nombre.value || !servicio.value || !fecha.value || !horaSeleccionada) {
+    alert("Completá todos los campos");
+    return;
+  }
+
+  const ok = confirm(
+`Confirmar reserva:
+
+Nombre: ${nombre.value}
+Servicio: ${servicio.value}
+Fecha: ${fecha.value}
+Hora: ${horaSeleccionada}`
+  );
+
+  if (!ok) return;
+
+  // POST al backend
+  fetch('http://localhost:3000/reservar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nombre: nombre.value,
+      servicio: servicio.value,
+      fecha: fecha.value,
+      hora: horaSeleccionada
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message === "Turno reservado") {
+      actualizarTurnos();
+      alert("Turno reservado correctamente!");
+    } else {
+      alert(data.message);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Error al reservar turno");
+  });
+
+  // WhatsApp sigue igual
+  window.open(
+    `https://wa.me/${telefono}?text=${encodeURIComponent(
+      `Hola! Quiero reservar un turno.
+Nombre: ${nombre.value}
+Servicio: ${servicio.value}
+Fecha: ${fecha.value}
+Hora: ${horaSeleccionada}`
+    )}`,
+    "_blank"
+  );
+}
+
+function cancelar() {
+  window.open(
+    `https://wa.me/${telefono}?text=${encodeURIComponent("Hola! Quiero cancelar o reprogramar un turno.")}`,
+    "_blank"
+  );
+}
 </script>
+
 </body>
 </html>
-

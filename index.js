@@ -18,31 +18,27 @@ app.use(cors()); // Para que puedas conectar con tu frontend si está en otra UR
 // ENDPOINT: Obtener todos los turnos
 // =======================
 app.get('/turnos', async (req, res) => {
-  const { fecha } = req.query; // recibimos ?fecha=YYYY-MM-DD
-
-  let where = {};
-  if (fecha) {
-    const fechaObj = new Date(fecha + "T00:00:00");
-    const fechaFin = new Date(fecha + "T23:59:59");
-    where.fecha = {
-      gte: fechaObj,
-      lte: fechaFin
-    };
-  }
-
+  const { fecha } = req.query; // recibimos la fecha del frontend
   try {
+    let where = {};
+    if (fecha) {
+      // filtramos turnos de esa fecha exacta
+      const fechaInicio = new Date(fecha + "T00:00:00");
+      const fechaFin = new Date(fecha + "T23:59:59");
+      where.fecha = { gte: fechaInicio, lte: fechaFin };
+    }
+
     const turnos = await prisma.turno.findMany({
       where,
       orderBy: { hora: 'asc' }
     });
+
     res.json(turnos);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error al obtener turnos' });
   }
 });
-
-
 // =======================
 // ENDPOINT: Reservar un turno
 // =======================

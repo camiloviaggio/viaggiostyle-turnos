@@ -98,6 +98,18 @@ button {
   text-align: center;
   margin-top: 6px;
 }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table th, table td {
+  padding: 6px;
+  border-bottom: 1px solid #555;
+  text-align: left;
+}
 </style>
 </head>
 
@@ -129,6 +141,27 @@ button {
 
 <button type="button" class="cancel" onclick="cancelar()">Cancelar / Reprogramar</button>
 
+<hr style="margin: 25px 0; border-color: #444;">
+
+<h3 style="text-align:center; margin-bottom:10px;">Panel de administración</h3>
+
+<label>Seleccionar fecha para ver turnos</label>
+<input type="date" id="fechaAdmin">
+
+<table id="tablaTurnos">
+  <thead>
+    <tr>
+      <th>Hora</th>
+      <th>Nombre</th>
+      <th>Servicio</th>
+      <th>Disponible</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Turnos se cargan aquí -->
+  </tbody>
+</table>
+
 </div>
 
 <script>
@@ -140,11 +173,17 @@ const servicio = document.getElementById("servicio");
 const fecha = document.getElementById("fecha");
 const horarios = document.getElementById("horarios");
 
+const fechaAdmin = document.getElementById("fechaAdmin");
+const tablaTurnos = document.getElementById("tablaTurnos").querySelector("tbody");
+
 fecha.min = new Date().toISOString().split("T")[0];
 fecha.addEventListener("change", () => {
   cargarHorarios();
   setTimeout(actualizarTurnos, 100);
 });
+
+fechaAdmin.min = new Date().toISOString().split("T")[0];
+fechaAdmin.addEventListener("change", cargarTurnosAdmin);
 
 function cargarHorarios() {
   horarios.innerHTML = "";
@@ -224,6 +263,31 @@ function actualizarTurnos() {
 }
 
 // =======================
+// PANEL DE ADMINISTRACIÓN
+// =======================
+function cargarTurnosAdmin() {
+  if (!fechaAdmin.value) return;
+
+  fetch(`http://localhost:3000/turnos?fecha=${fechaAdmin.value}`)
+    .then(res => res.json())
+    .then(turnos => {
+      tablaTurnos.innerHTML = "";
+      turnos.sort((a,b) => a.hora.localeCompare(b.hora));
+      turnos.forEach(t => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td>${t.hora}</td>
+          <td>${t.nombre}</td>
+          <td>${t.servicio}</td>
+          <td>${t.disponible ? "Sí" : "No"}</td>
+        `;
+        tablaTurnos.appendChild(fila);
+      });
+    })
+    .catch(err => console.error(err));
+}
+
+// =======================
 // FUNCIONES DE RESERVA Y CANCELACIÓN
 // =======================
 function confirmar() {
@@ -243,7 +307,6 @@ Hora: ${horaSeleccionada}`
 
   if (!ok) return;
 
-  // POST al backend
   fetch('http://localhost:3000/reservar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -258,6 +321,7 @@ Hora: ${horaSeleccionada}`
   .then(data => {
     if (data.message === "Turno reservado") {
       actualizarTurnos();
+      if(fechaAdmin.value === fecha.value) cargarTurnosAdmin();
       alert("Turno reservado correctamente!");
     } else {
       alert(data.message);
@@ -268,7 +332,6 @@ Hora: ${horaSeleccionada}`
     alert("Error al reservar turno");
   });
 
-  // WhatsApp sigue igual
   window.open(
     `https://wa.me/${telefono}?text=${encodeURIComponent(
       `Hola! Quiero reservar un turno.

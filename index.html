@@ -100,6 +100,11 @@ button {
   position: relative;
   overflow: hidden;
 }
+  .hora-btn.ocupado {
+  background-color: #555; /* gris = ocupado */
+  color: #aaa;
+  cursor: not-allowed;
+}
 </style>
 </head>
 
@@ -229,6 +234,37 @@ function cancelar() {
     "_blank"
   );
 }
+  // Función para actualizar turnos ocupados desde el backend
+function actualizarTurnos() {
+  if (!fecha.value) return;
+
+  fetch(`http://localhost:3000/turnos?fecha=${fecha.value}`)
+    .then(res => res.json())
+    .then(turnos => {
+      document.querySelectorAll(".hora-btn").forEach(boton => {
+        const hora = boton.textContent;
+        const ocupado = turnos.some(t => t.hora === hora && !t.disponible);
+        if (ocupado) {
+          boton.classList.add("ocupado");
+          boton.onclick = null; // bloquea click
+        } else {
+          boton.classList.remove("ocupado");
+          boton.onclick = () => {
+            document.querySelectorAll(".hora-btn").forEach(x=>x.classList.remove("active"));
+            boton.classList.add("active");
+            horaSeleccionada = hora;
+          };
+        }
+      });
+    })
+    .catch(err => console.error(err));
+}
+
+// Llamamos a actualizarTurnos cada vez que cambia la fecha
+fecha.addEventListener("change", () => {
+  cargarHorarios(); // tu función original
+  setTimeout(actualizarTurnos, 100); // espera a que se creen los botones
+});
 </script>
 
 </body>

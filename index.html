@@ -216,6 +216,32 @@ Hora: ${horaSeleccionada}`
 
   if (!ok) return;
 
+  // 1️⃣ Llamada al backend para reservar
+  fetch('http://localhost:3000/reservar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nombre: nombre.value,
+      servicio: servicio.value,
+      fecha: fecha.value,
+      hora: horaSeleccionada
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message === "Turno reservado") {
+      alert("Turno reservado correctamente!");
+      actualizarTurnos(); // Actualiza la UI
+    } else {
+      alert(data.message);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Error al reservar turno");
+  });
+
+  // 2️⃣ Abrir WhatsApp
   window.open(
     `https://wa.me/${telefono}?text=${encodeURIComponent(
       `Hola! Quiero reservar un turno.
@@ -236,6 +262,36 @@ function cancelar() {
 }
   // Función para actualizar turnos ocupados desde el backend
 function actualizarTurnos() {
+  if (!fecha.value) return;
+
+  fetch(`http://localhost:3000/turnos?fecha=${fecha.value}`)
+    .then(res => res.json())
+    .then(turnos => {
+      document.querySelectorAll(".hora-btn").forEach(boton => {
+        const hora = boton.textContent;
+        const ocupado = turnos.some(t => t.hora === hora && !t.disponible);
+        if (ocupado) {
+          boton.classList.add("ocupado");
+          boton.onclick = null; // bloquea click
+        } else {
+          boton.classList.remove("ocupado");
+          boton.onclick = () => {
+            document.querySelectorAll(".hora-btn").forEach(x=>x.classList.remove("active"));
+            boton.classList.add("active");
+            horaSeleccionada = hora;
+          };
+        }
+      });
+    })
+    .catch(err => console.error(err));
+}
+
+// Llamamos a actualizarTurnos cada vez que cambia la fecha
+fecha.addEventListener("change", () => {
+  cargarHorarios(); // tu función original
+  setTimeout(actualizarTurnos, 100); // espera a que se creen los botones
+});
+  function actualizarTurnos() {
   if (!fecha.value) return;
 
   fetch(`http://localhost:3000/turnos?fecha=${fecha.value}`)

@@ -1,15 +1,11 @@
 {
   "name": "viaggiostyle-backend",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "commonjs",
+  "scripts": {
+    "start": "npx prisma generate && node index.js"
+  },
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "body-parser": "^2.2.1",
@@ -17,8 +13,5 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "prisma": "^5.22.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.11"
   }
 }

@@ -116,7 +116,10 @@ app.post("/cancelar", async (req, res) => {
 // =======================
 // INICIAR SERVIDOR
 // =======================
-const PORT = process.env.PORT || 3000; // ahora toma la variable de entorno si existe
+const PORT = process.env.PORT || 3000; // ahora toma la variable de entorno si existe 
+app.get('/', (req, res) => {
+  res.send('🚀 API de turnos ViaggioStyle funcionando');
+});
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
 });

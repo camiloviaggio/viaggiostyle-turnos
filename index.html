@@ -270,64 +270,78 @@ function generar(inicio, fin) {
   }
 }
 
+// =======================
 // BLOQUEO DE TURNOS OCUPADOS
-function actualizarTurnos() {
+// =======================
+const urlBackend = 'https://viaggiostyle-turnos.onrender.com';
+
+async function actualizarTurnos() {
   if (!fecha.value) return;
 
-  fetch(`http://localhost:3000/turnos?fecha=${fecha.value}`)
-    .then(res => res.json())
-    .then(turnos => {
-      document.querySelectorAll(".hora-btn").forEach(boton => {
-        const hora = boton.textContent;
-        const turnoOcupado = turnos.find(t => t.hora === hora && !t.disponible);
-        if (turnoOcupado) {
-          boton.classList.add("ocupado");
-          boton.onclick = null;
-        } else {
-          boton.classList.remove("ocupado");
-          boton.onclick = () => {
-            document.querySelectorAll(".hora-btn").forEach(x => x.classList.remove("active"));
-            boton.classList.add("active");
-            horaSeleccionada = hora;
-          };
-        }
-      });
-    })
-    .catch(err => console.error(err));
+  try {
+    const res = await fetch(`${urlBackend}/turnos?fecha=${fecha.value}`);
+    const turnos = await res.json();
+
+    document.querySelectorAll(".hora-btn").forEach(boton => {
+      const hora = boton.textContent;
+      const turnoOcupado = turnos.find(t => t.hora === hora && !t.disponible);
+
+      if (turnoOcupado) {
+        boton.classList.add("ocupado");
+        boton.onclick = null;
+      } else {
+        boton.classList.remove("ocupado");
+        boton.onclick = () => {
+          document.querySelectorAll(".hora-btn").forEach(x => x.classList.remove("active"));
+          boton.classList.add("active");
+          horaSeleccionada = hora;
+        };
+      }
+    });
+  } catch (err) {
+    console.error(err);
+  }
 }
 
+// =======================
 // PANEL ADMINISTRACIÓN
-function cargarTurnosAdmin() {
+// =======================
+async function cargarTurnosAdmin() {
   if (!fechaAdmin.value) return;
 
-  fetch(`http://localhost:3000/turnos?fecha=${fechaAdmin.value}`)
-    .then(res => res.json())
-    .then(turnos => {
-      tablaTurnos.innerHTML = "";
-      turnos.sort((a,b) => a.hora.localeCompare(b.hora));
-      turnos.forEach(t => {
-        const fila = document.createElement("tr");
-        fila.innerHTML = `
-          <td>${t.hora}</td>
-          <td>${t.nombre}</td>
-          <td>${t.servicio}</td>
-          <td>${t.disponible ? "Sí" : "No"}</td>
-          <td>
-            ${t.disponible ? "" : `<button onclick="cancelarTurno(${t.id})" style="padding:4px 8px; border:none; border-radius:6px; background:#ff4d4d; color:#fff; cursor:pointer;">Cancelar</button>`}
-          </td>
-        `;
-        tablaTurnos.appendChild(fila);
-      });
-    })
-    .catch(err => console.error(err));
+  try {
+    const res = await fetch(`${urlBackend}/turnos?fecha=${fechaAdmin.value}`);
+    const turnos = await res.json();
+
+    tablaTurnos.innerHTML = "";
+    turnos.sort((a,b) => a.hora.localeCompare(b.hora));
+
+    turnos.forEach(t => {
+      const fila = document.createElement("tr");
+      fila.innerHTML = `
+        <td>${t.hora}</td>
+        <td>${t.nombre || ""}</td>
+        <td>${t.servicio || ""}</td>
+        <td>${t.disponible ? "Sí" : "No"}</td>
+        <td>
+          ${t.disponible ? "" : `<button onclick="cancelarTurno(${t.id})" style="padding:4px 8px; border:none; border-radius:6px; background:#ff4d4d; color:#fff; cursor:pointer;">Cancelar</button>`}
+        </td>
+      `;
+      tablaTurnos.appendChild(fila);
+    });
+  } catch (err) {
+    console.error(err);
+  }
 }
 
+// =======================
 // CANCELAR DESDE PANEL
+// =======================
 function cancelarTurno(id) {
   const ok = confirm("¿Deseás cancelar este turno?");
   if (!ok) return;
 
-  fetch('http://localhost:3000/cancelar', {
+  fetch(`${urlBackend}/cancelar`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id })
@@ -344,7 +358,9 @@ function cancelarTurno(id) {
   });
 }
 
+// =======================
 // RESERVA NORMAL
+// =======================
 function confirmar() {
   if (!nombre.value || !servicio.value || !fecha.value || !horaSeleccionada) {
     alert("Completá todos los campos");
@@ -362,7 +378,7 @@ Hora: ${horaSeleccionada}`
 
   if (!ok) return;
 
-  fetch('http://localhost:3000/reservar', {
+  fetch(`${urlBackend}/reservar`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -374,12 +390,12 @@ Hora: ${horaSeleccionada}`
   })
   .then(res => res.json())
   .then(data => {
-    if (data.message === "Turno reservado") {
+    if (data.mensaje === "Turno reservado correctamente") {
       actualizarTurnos();
       if(fechaAdmin.value === fecha.value) cargarTurnosAdmin();
       alert("Turno reservado correctamente!");
     } else {
-      alert(data.message);
+      alert(data.error || data.message);
     }
   })
   .catch(err => {
@@ -405,26 +421,12 @@ function cancelar() {
     "_blank"
   );
 }
-const urlBackend = 'https://viaggiostyle-turnos.onrender.com/';
 
-async function cargarTurnos() {
-  const res = await fetch(urlBackend);
-  const turnos = await res.json();
-
-  turnos.forEach(turno => {
-    const boton = document.getElementById(turno.hora);
-    if(turno.ocupado) {
-      boton.disabled = true;
-      boton.style.backgroundColor = '#ccc'; // gris
-    } else {
-      boton.disabled = false;
-      boton.style.backgroundColor = '#0f0'; // verde por ejemplo
-    }
-  });
-}
-
-cargarTurnos();
-
+// =======================
+// CARGAR TURNOS INICIALES
+// =======================
+cargarHorarios();
+actualizarTurnos();
 </script>
 
 </body>

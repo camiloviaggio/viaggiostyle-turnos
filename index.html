@@ -405,6 +405,26 @@ function cancelar() {
     "_blank"
   );
 }
+const urlBackend = 'https://viaggiostyle-turnos.onrender.com/';
+
+async function cargarTurnos() {
+  const res = await fetch(urlBackend);
+  const turnos = await res.json();
+
+  turnos.forEach(turno => {
+    const boton = document.getElementById(turno.hora);
+    if(turno.ocupado) {
+      boton.disabled = true;
+      boton.style.backgroundColor = '#ccc'; // gris
+    } else {
+      boton.disabled = false;
+      boton.style.backgroundColor = '#0f0'; // verde por ejemplo
+    }
+  });
+}
+
+cargarTurnos();
+
 </script>
 
 </body>

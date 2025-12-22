@@ -1,7 +1,11 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const { PrismaClient } = require('@prisma/client');
+// =======================
+// ENV
+// =======================
+require("dotenv").config();
+
+const express = require("express");
+const { PrismaClient } = require("@prisma/client");
+const cors = require("cors");
 
 const app = express();
 const prisma = new PrismaClient();
@@ -10,106 +14,117 @@ app.use(cors());
 app.use(express.json());
 
 // =======================
-// HEALTH CHECK
+// GET turnos por fecha
 // =======================
-app.get('/', (req, res) => {
-  res.send('🚀 API de turnos ViaggioStyle funcionando');
-});
-
-// =======================
-// OBTENER TURNOS POR FECHA
-// =======================
-app.get('/turnos', async (req, res) => {
-  const { fecha } = req.query;
-
-  if (!fecha) {
-    return res.status(400).json({ message: 'Fecha requerida' });
-  }
-
+app.get("/turnos", async (req, res) => {
   try {
+    const { fecha } = req.query;
+    if (!fecha) return res.json([]);
+
     const turnos = await prisma.turno.findMany({
-      where: { fecha },
-      orderBy: { hora: 'asc' }
+      where: {
+        fecha: new Date(fecha),
+      },
+      orderBy: { hora: "asc" },
     });
 
     res.json(turnos);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al obtener turnos' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: "Error al obtener turnos" });
   }
 });
 
 // =======================
-// RESERVAR TURNO
+// POST reservar turno (FIX REAL)
 // =======================
-app.post('/reservar', async (req, res) => {
+app.post("/reservar", async (req, res) => {
   try {
     const { nombre, servicio, fecha, hora } = req.body;
 
     if (!nombre || !servicio || !fecha || !hora) {
-      return res.status(400).json({ message: "Faltan datos" });
+      return res.status(400).json({ mensaje: "Datos incompletos" });
     }
 
-    const fechaTurno = new Date(fecha + "T00:00:00");
+    const fechaDate = new Date(fecha);
 
-    // Ver si el turno YA está ocupado
-    const turnoOcupado = await prisma.turno.findFirst({
+    // Buscar si el turno ya existe
+    const turnoExistente = await prisma.turno.findFirst({
       where: {
-        fecha: fechaTurno,
-        hora,
-        disponible: false
-      }
+        fecha: fechaDate,
+        hora: hora,
+      },
     });
 
-    if (turnoOcupado) {
-      return res.status(409).json({ message: "Turno ya ocupado" });
+    // Si existe y está ocupado → error
+    if (turnoExistente && turnoExistente.disponible === false) {
+      return res.status(400).json({ mensaje: "Turno ya ocupado" });
     }
 
-    // Crear el turno (o reemplazar uno libre)
+    // Si existe y está libre → actualizar
+    if (turnoExistente) {
+      await prisma.turno.update({
+        where: { id: turnoExistente.id },
+        data: {
+          disponible: false,
+          nombre,
+          servicio,
+        },
+      });
+
+      return res.json({ mensaje: "Turno reservado correctamente" });
+    }
+
+    // Si NO existe → crear turno
     await prisma.turno.create({
       data: {
-        fecha: fechaTurno,
+        fecha: fechaDate,
         hora,
         nombre,
         servicio,
-        disponible: false
-      }
+        disponible: false,
+      },
     });
 
-    res.json({ message: "Turno reservado correctamente" });
+    res.json({ mensaje: "Turno reservado correctamente" });
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al reservar turno" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: "Error al reservar turno" });
   }
 });
 
-
 // =======================
-// CANCELAR TURNO
+// POST cancelar turno
 // =======================
-app.post('/cancelar', async (req, res) => {
-  const { id } = req.body;
-
+app.post("/cancelar", async (req, res) => {
   try {
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ mensaje: "ID requerido" });
+
     await prisma.turno.update({
-      where: { id },
+      where: { id: Number(id) },
       data: {
         disponible: true,
-        nombre: '',
-        servicio: ''
-      }
+        nombre: "",
+        servicio: "",
+      },
     });
 
-    res.json({ message: 'Turno cancelado' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al cancelar turno' });
+    res.json({ mensaje: "Turno cancelado correctamente" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: "Error al cancelar turno" });
   }
 });
 
 // =======================
+// SERVER
+// =======================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-});
+app.get("/", (_, res) =>
+  res.send("🚀 API de turnos ViaggioStyle funcionando")
+);
+app.listen(PORT, () =>
+  console.log(`🚀 Servidor corriendo en puerto ${PORT}`)
+);

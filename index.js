@@ -4,11 +4,17 @@ const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 const cors = require("cors");
 
-const app = express();
+
 const prisma = new PrismaClient();
+const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
+
+app.use(cors());
+app.use(express.json());
+
 
 /* =========================
    HEALTH CHECK
@@ -41,6 +47,25 @@ app.get("/turnos", async (req, res) => {
   });
 
   res.json(turnos);
+});
+
+// =======================
+// ENDPOINT ADMIN: ver todos los turnos
+// =======================
+app.get("/admin/turnos", async (req, res) => {
+  try {
+    const turnos = await prisma.turno.findMany({
+      orderBy: [
+        { fecha: "asc" },
+        { hora: "asc" }
+      ]
+    });
+
+    res.json(turnos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al obtener turnos (admin)" });
+  }
 });
 
 
@@ -92,5 +117,6 @@ app.post("/reservar", async (req, res) => {
 ========================= */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  console.log("🚀 API de turnos ViaggioStyle funcionando");
 });
+

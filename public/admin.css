@@ -1,0 +1,70 @@
+body {
+  background: #0f0f0f;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  margin: 0;
+}
+
+header {
+  text-align: center;
+  font-size: 28px;
+  padding: 20px;
+  font-weight: bold;
+}
+
+.container {
+  max-width: 700px;
+  margin: 30px auto;
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 16px;
+}
+
+h2 {
+  margin-top: 0;
+  text-align: center;
+}
+
+#mensaje {
+  margin-top: 10px;
+  text-align: center;
+  color: #888;
+  font-style: italic;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table th, table td {
+  padding: 12px;
+  border-bottom: 1px solid #444;
+  text-align: left;
+}
+
+table th {
+  background: #222;
+}
+
+table tr:hover {
+  background: #2a2a2a;
+}
+
+/* Línea diagonal para turnos ocupados */
+.linea-oblicua {
+  position: relative;
+  overflow: hidden;
+}
+
+.linea-oblicua::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -10%;
+  width: 120%;
+  height: 2px;
+  background: #ff4d4d;
+  transform: rotate(-25deg);
+}

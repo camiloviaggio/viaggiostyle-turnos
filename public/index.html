@@ -25,7 +25,7 @@ header {
   font-weight: bold;
   animation: fadeDown 1s ease forwards;
   opacity: 0;
-  color: #25d366;
+  color: #fff; /* título blanco */
 }
 
 .container {
@@ -193,7 +193,6 @@ table tr:hover {
 <div id="horarios"></div>
 
 <button type="button" onclick="confirmar()">Confirmar reserva</button>
-
 <button type="button" class="cancel" onclick="cancelar()">Cancelar / Reprogramar</button>
 
 <hr style="margin: 25px 0; border-color: #444;">
@@ -237,37 +236,23 @@ fecha.addEventListener("change", () => { cargarHorarios(); setTimeout(actualizar
 fechaAdmin.min = new Date().toISOString().split("T")[0];
 fechaAdmin.addEventListener("change", cargarTurnosAdmin);
 
+// Generar horarios
 function cargarHorarios() {
   horarios.innerHTML = "";
   horaSeleccionada = "";
 
   const dia = new Date(fecha.value + "T00:00:00").getDay();
 
-  if (dia === 0) {
-    horarios.innerHTML = "<div style='color:#888'>Domingos cerrado</div>";
-    return;
-  }
+  if (dia === 0) { horarios.innerHTML = "<div style='color:#888'>Domingos cerrado</div>"; return; }
+  if (dia === 3 || dia === 5) { generar("10:00","16:30"); }
+  if ([1,2,4].includes(dia)) { generar("09:00","13:00"); generar("15:30","20:00"); }
+  if (dia === 6) { generar("09:00","20:00"); }
 
-  if (dia === 3 || dia === 5) {
-    generar("10:00","16:30");
-    return;
-  }
-
-  if (dia === 1 || dia === 2 || dia === 4) {
-    generar("09:00","13:00");
-    generar("15:30","20:00");
-    return;
-  }
-
-  if (dia === 6) {
-    generar("09:00","20:00");
-  }
-
-  // Animación al mostrar los horarios
-  setTimeout(() => {
-    horarios.style.opacity = "1";
-    horarios.style.transform = "translateY(0)";
-  }, 50);
+  // Animación cascada
+  Array.from(horarios.children).forEach((b,i)=>{
+    b.style.opacity="0";
+    setTimeout(()=>{ b.style.opacity="1"; b.style.transform="translateY(0)"; }, i*80);
+  });
 }
 
 function generar(inicio, fin) {
@@ -292,10 +277,9 @@ function generar(inicio, fin) {
   }
 }
 
-// BLOQUEO DE TURNOS OCUPADOS
+// Actualizar turnos ocupados
 async function actualizarTurnos() {
   if (!fecha.value) return;
-
   try {
     const res = await fetch(`${urlBackend}/turnos?fecha=${fecha.value}`);
     const turnos = await res.json();
@@ -304,10 +288,8 @@ async function actualizarTurnos() {
       const hora = boton.textContent;
       const turnoOcupado = turnos.find(t => t.hora === hora && !t.disponible);
 
-      if (turnoOcupado) {
-        boton.classList.add("ocupado");
-        boton.onclick = null;
-      } else {
+      if (turnoOcupado) { boton.classList.add("ocupado"); boton.onclick = null; }
+      else {
         boton.classList.remove("ocupado");
         boton.onclick = () => {
           document.querySelectorAll(".hora-btn").forEach(x => x.classList.remove("active"));
@@ -316,22 +298,17 @@ async function actualizarTurnos() {
         };
       }
     });
-  } catch (err) {
-    console.error(err);
-  }
+  } catch (err) { console.error(err); }
 }
 
-// PANEL ADMINISTRACIÓN
+// Panel administración
 async function cargarTurnosAdmin() {
   if (!fechaAdmin.value) return;
-
   try {
     const res = await fetch(`${urlBackend}/turnos?fecha=${fechaAdmin.value}`);
     const turnos = await res.json();
-
     tablaTurnos.innerHTML = "";
     turnos.sort((a,b) => a.hora.localeCompare(b.hora));
-
     turnos.forEach(t => {
       const fila = document.createElement("tr");
       fila.innerHTML = `
@@ -345,83 +322,43 @@ async function cargarTurnosAdmin() {
       `;
       tablaTurnos.appendChild(fila);
     });
-  } catch (err) {
-    console.error(err);
-  }
+  } catch (err) { console.error(err); }
 }
 
-// CANCELAR DESDE PANEL
 function cancelarTurno(id) {
-  const ok = confirm("¿Deseás cancelar este turno?");
-  if (!ok) return;
-
-  fetch(`${urlBackend}/cancelar`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id })
-  })
-  .then(res => res.json())
-  .then(data => {
-    alert(data.message);
-    actualizarTurnos();
-    cargarTurnosAdmin();
-  })
-  .catch(err => {
-    console.error(err);
-    alert("Error al cancelar turno");
-  });
+  if (!confirm("¿Deseás cancelar este turno?")) return;
+  fetch(`${urlBackend}/cancelar`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id})})
+    .then(res=>res.json()).then(data=>{ alert(data.mensaje); actualizarTurnos(); cargarTurnosAdmin(); })
+    .catch(err=>{ console.error(err); alert("Error al cancelar turno"); });
 }
 
-// RESERVA NORMAL
 function confirmar() {
   if (!nombre.value || !servicio.value || !fecha.value || !horaSeleccionada) {
-    alert("Completá todos los campos");
-    return;
+    alert("Completá todos los campos"); return;
   }
 
-  const ok = confirm(
-`Confirmar reserva:
+  if (!confirm(`Confirmar reserva:\n\nNombre: ${nombre.value}\nServicio: ${servicio.value}\nFecha: ${fecha.value}\nHora: ${horaSeleccionada}`)) return;
 
-Nombre: ${nombre.value}
-Servicio: ${servicio.value}
-Fecha: ${fecha.value}
-Hora: ${horaSeleccionada}`
-  );
-
-  if (!ok) return;
-
-  fetch(`${urlBackend}/reservar`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      nombre: nombre.value,
-      servicio: servicio.value,
-      fecha: fecha.value,
-      hora: horaSeleccionada
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
+  fetch(`${urlBackend}/reservar`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+    nombre: nombre.value,
+    servicio: servicio.value,
+    fecha: fecha.value,
+    hora: horaSeleccionada
+  })})
+  .then(res=>res.json())
+  .then(data=>{
     if (data.mensaje === "Turno reservado correctamente") {
       actualizarTurnos();
-      if(fechaAdmin.value === fecha.value) cargarTurnosAdmin();
+      if(fechaAdmin.value===fecha.value) cargarTurnosAdmin();
       alert("Turno reservado correctamente!");
-    } else {
-      alert(data.error || data.mensaje);
-    }
+    } else alert(data.error||data.mensaje);
   })
-  .catch(err => {
-    console.error(err);
-    alert("Error al reservar turno");
-  });
+  .catch(err=>{ console.error(err); alert("Error al reservar turno"); });
 }
 
-// CANCELAR / REPROGRAMAR
-function cancelar() {
-  alert("Funcionalidad de WhatsApp desactivada para pruebas.");
-}
+function cancelar() { alert("Funcionalidad de WhatsApp desactivada para pruebas."); }
 
-// CARGAR HORARIOS INICIALES
+// Cargar horarios iniciales
 cargarHorarios();
 actualizarTurnos();
 </script>

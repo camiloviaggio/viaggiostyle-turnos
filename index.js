@@ -43,48 +43,47 @@ app.get('/turnos', async (req, res) => {
 // RESERVAR TURNO
 // =======================
 app.post('/reservar', async (req, res) => {
-  const { nombre, servicio, fecha, hora } = req.body;
-
-  if (!nombre || !servicio || !fecha || !hora) {
-    return res.status(400).json({ message: 'Datos incompletos' });
-  }
-
   try {
-    const existente = await prisma.turno.findFirst({
-      where: { fecha, hora }
+    const { nombre, servicio, fecha, hora } = req.body;
+
+    if (!nombre || !servicio || !fecha || !hora) {
+      return res.status(400).json({ message: "Faltan datos" });
+    }
+
+    const fechaTurno = new Date(fecha + "T00:00:00");
+
+    // Ver si el turno YA está ocupado
+    const turnoOcupado = await prisma.turno.findFirst({
+      where: {
+        fecha: fechaTurno,
+        hora,
+        disponible: false
+      }
     });
 
-    if (existente && !existente.disponible) {
-      return res.status(409).json({ message: 'Turno ya ocupado' });
+    if (turnoOcupado) {
+      return res.status(409).json({ message: "Turno ya ocupado" });
     }
 
-    if (existente) {
-      await prisma.turno.update({
-        where: { id: existente.id },
-        data: {
-          disponible: false,
-          nombre,
-          servicio
-        }
-      });
-    } else {
-      await prisma.turno.create({
-        data: {
-          fecha,
-          hora,
-          nombre,
-          servicio,
-          disponible: false
-        }
-      });
-    }
+    // Crear el turno (o reemplazar uno libre)
+    await prisma.turno.create({
+      data: {
+        fecha: fechaTurno,
+        hora,
+        nombre,
+        servicio,
+        disponible: false
+      }
+    });
 
-    res.json({ message: 'Turno reservado' });
+    res.json({ message: "Turno reservado correctamente" });
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error al reservar turno' });
+    res.status(500).json({ message: "Error al reservar turno" });
   }
 });
+
 
 // =======================
 // CANCELAR TURNO

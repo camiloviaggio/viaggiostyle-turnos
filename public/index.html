@@ -111,6 +111,9 @@ button {
 </div>
 
 <script>
+  const nombre = document.getElementById("nombre");
+const servicio = document.getElementById("servicio");
+
 const backend = "https://viaggiostyle-turnos.onrender.com";
 const horariosDiv = document.getElementById("horarios");
 const fechaInput = document.getElementById("fecha");
@@ -209,8 +212,14 @@ async function reservar() {
   });
 
   const data = await res.json();
-  alert(data.message);
-  generarHorarios();
+
+if (!res.ok) {
+  alert(data.message || "Error al reservar turno");
+  return;
+}
+
+alert(data.message);
+
 }
 </script>
 

@@ -21,20 +21,28 @@ app.get("/", (req, res) => {
    OBTENER TURNOS (ADMIN)
 ========================= */
 app.get("/turnos", async (req, res) => {
-  try {
-    const turnos = await prisma.turno.findMany({
-      orderBy: [
-        { fecha: "asc" },
-        { hora: "asc" }
-      ]
-    });
+  const { fecha } = req.query;
 
-    res.json(turnos);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error al obtener turnos" });
+  if (!fecha) {
+    return res.status(400).json({ mensaje: "Falta la fecha" });
   }
+
+  const inicio = new Date(fecha + "T00:00:00.000Z");
+  const fin = new Date(fecha + "T23:59:59.999Z");
+
+  const turnos = await prisma.turno.findMany({
+    where: {
+      fecha: {
+        gte: inicio,
+        lte: fin
+      },
+      disponible: false
+    }
+  });
+
+  res.json(turnos);
 });
+
 
 /* =========================
    RESERVAR TURNO
@@ -43,41 +51,40 @@ app.post("/reservar", async (req, res) => {
   const { nombre, servicio, fecha, hora } = req.body;
 
   if (!nombre || !servicio || !fecha || !hora) {
-    return res.status(400).json({ error: "Faltan datos" });
+    return res.status(400).json({ mensaje: "Faltan datos" });
   }
 
-  try {
-    const fechaISO = new Date(fecha + "T12:00:00.000Z");
+  const inicio = new Date(fecha + "T00:00:00.000Z");
+  const fin = new Date(fecha + "T23:59:59.999Z");
 
-    const existente = await prisma.turno.findFirst({
-      where: {
-        fecha: fechaISO,
-        hora,
-        disponible: false
-      }
-    });
-
-    if (existente) {
-      return res.status(400).json({ error: "Turno ocupado" });
+  const existente = await prisma.turno.findFirst({
+    where: {
+      hora,
+      fecha: {
+        gte: inicio,
+        lte: fin
+      },
+      disponible: false
     }
+  });
 
-    await prisma.turno.create({
-      data: {
-        nombre,
-        servicio,
-        fecha: fechaISO,
-        hora,
-        disponible: false
-      }
-    });
-
-    res.json({ mensaje: "Turno reservado correctamente" });
-
-  } catch (error) {
-    console.error("ERROR REAL:", error);
-    res.status(500).json({ error: "Error interno" });
+  if (existente) {
+    return res.status(409).json({ mensaje: "Ese horario ya está ocupado" });
   }
+
+  await prisma.turno.create({
+    data: {
+      nombre,
+      servicio,
+      fecha: new Date(fecha),
+      hora,
+      disponible: false
+    }
+  });
+
+  res.json({ mensaje: "Turno reservado correctamente" });
 });
+
 
 
 /* =========================

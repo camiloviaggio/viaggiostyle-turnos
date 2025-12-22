@@ -27,7 +27,6 @@ const prisma = new PrismaClient();
 // =======================
 app.use(cors());
 app.use(bodyParser.json());
-app.use(cors()); // Para que puedas conectar con tu frontend si está en otra URL
 
 // =======================
 // ENDPOINT: Obtener todos los turnos por fecha
@@ -38,6 +37,7 @@ app.get('/turnos', async (req, res) => {
     const filtro = fecha ? { fecha: new Date(fecha) } : {};
 
     const turnos = await prisma.turno.findMany({
+      where: filtro,
       orderBy: { fecha: 'asc' }
     });
 
@@ -47,42 +47,36 @@ app.get('/turnos', async (req, res) => {
     res.status(500).json({ message: "Error al obtener turnos" });
   }
 });
+
 // =======================
 // ENDPOINT: Reservar un turno
 // =======================
-app.post("/reservar", async (req, res) => {
-  const { nombre, servicio, fecha, hora } = req.body;
-
-  if (!nombre || !servicio || !fecha || !hora) {
-    return res.status(400).json({ message: "Faltan datos" });
-  }
+app.post('/reservar', async (req, res) => {
+  const { hora } = req.body;
 
   try {
-    const turnoExistente = await prisma.turno.findFirst({
-      where: {
-        fecha: new Date(fecha),
-        hora,
-        disponible: true,
-      },
-    });
+    // Buscar si el turno ya existe
+    const turnoExistente = await prisma.turno.findUnique({ where: { hora } });
 
     if (!turnoExistente) {
-      return res.status(400).json({ message: "Turno no disponible" });
+      return res.status(404).json({ error: 'Turno no existe' });
     }
 
-    const turno = await prisma.turno.update({
-      where: { id: turnoExistente.id },
-      data: {
-        nombre,
-        servicio,
-        disponible: false,
-      },
+    // Validar si está disponible
+    if (!turnoExistente.disponible) {
+      return res.status(400).json({ error: 'Turno ya ocupado' });
+    }
+
+    // Marcar como ocupado
+    const turnoActualizado = await prisma.turno.update({
+      where: { hora },
+      data: { disponible: false }
     });
 
-    res.json({ message: "Turno reservado", turno });
+    res.json({ mensaje: 'Turno reservado correctamente', turno: turnoActualizado });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error al reservar turno" });
+    res.status(500).json({ error: 'Error al reservar turno' });
   }
 });
 
@@ -114,12 +108,17 @@ app.post("/cancelar", async (req, res) => {
 });
 
 // =======================
-// INICIAR SERVIDOR
+// ENDPOINT RAÍZ
 // =======================
-const PORT = process.env.PORT || 3000; // ahora toma la variable de entorno si existe 
+const PORT = process.env.PORT || 3000;
+
 app.get('/', (req, res) => {
   res.send('🚀 API de turnos ViaggioStyle funcionando');
 });
+
+// =======================
+// INICIAR SERVIDOR
+// =======================
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
 });

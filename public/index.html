@@ -214,13 +214,12 @@ async function reservar() {
   const data = await res.json();
 
 if (!res.ok) {
-  alert(data.message || "Error al reservar turno");
+  alert(data.mensaje || "Error al reservar turno");
   return;
 }
 
-alert(data.message);
+alert(data.mensaje);
 
-}
 </script>
 
 </body>

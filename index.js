@@ -8,6 +8,15 @@ const { PrismaClient } = require("@prisma/client");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Endpoint raíz sirve index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+
 // =======================
 // VALIDACIÓN DE ENV
 // =======================

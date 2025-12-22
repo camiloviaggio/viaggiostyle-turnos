@@ -4,167 +4,82 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ViaggioStyle | Turnos</title>
-<link rel="icon" href="logo.ico">
 
 <style>
-* { box-sizing: border-box; }
-
 body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #0f0f0f;
   color: #fff;
-  transition: background 0.3s;
+  font-family: Arial, sans-serif;
+  margin: 0;
 }
 
 header {
-  padding: 25px;
   text-align: center;
-  font-size: 32px;
-  letter-spacing: 4px;
+  font-size: 30px;
+  padding: 25px;
   font-weight: bold;
-  animation: fadeDown 1s ease forwards;
-  opacity: 0;
-  color: #fff; /* título blanco */
 }
 
 .container {
-  max-width: 460px;
-  margin: 30px auto;
+  max-width: 420px;
+  margin: auto;
   background: #1a1a1a;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-  animation: fadeUp 1s ease forwards;
-  opacity: 0;
-}
-
-@keyframes fadeDown {
-  from { opacity: 0; transform: translateY(-30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  padding: 25px;
+  border-radius: 16px;
 }
 
 label {
   display: block;
-  margin-top: 18px;
-  font-size: 15px;
+  margin-top: 15px;
 }
 
 input, select {
   width: 100%;
   padding: 14px;
   margin-top: 6px;
-  border-radius: 12px;
-  border: 2px solid #333;
+  border-radius: 10px;
+  border: none;
   font-size: 16px;
-  background: #121212;
-  color: #fff;
-  transition: all 0.3s ease;
-}
-
-input:focus, select:focus {
-  outline: none;
-  box-shadow: 0 0 10px #25d366;
-  border-color: #25d366;
 }
 
 #horarios {
-  margin-top: 12px;
+  margin-top: 15px;
   display: grid;
-  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
   opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.5s ease;
+  transform: translateY(15px);
+  transition: all 0.4s ease;
 }
 
 .hora-btn {
   padding: 12px;
-  border-radius: 14px;
+  border-radius: 10px;
   background: #333;
-  border: none;
   color: #fff;
+  border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: bold;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
-
-.hora-btn:hover:not(.ocupado) {
-  background: #25d366;
-  color: #000;
-  transform: scale(1.08) translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
 }
 
 .hora-btn.active {
-  background: #25d366;
+  background: #fff;
   color: #000;
-  transform: scale(1.05);
 }
 
 .hora-btn.ocupado {
-  background-color: #555;
-  color: #aaa;
+  background: #555;
+  color: #999;
   cursor: not-allowed;
-  opacity: 0.7;
-  transform: scale(1);
-  box-shadow: none;
 }
 
 button {
   width: 100%;
   padding: 16px;
   margin-top: 20px;
-  background: #25d366;
+  border-radius: 14px;
   border: none;
-  color: #000;
   font-size: 17px;
-  border-radius: 16px;
   cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-}
-
-button:hover {
-  transform: scale(1.04) translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.5);
-}
-
-.cancel {
-  background: #ff4d4d;
-  color: #fff;
-}
-
-.small {
-  font-size: 12px;
-  color: #aaa;
-  text-align: center;
-  margin-top: 6px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-  animation: fadeUp 0.8s ease forwards;
-}
-
-table th, table td {
-  padding: 8px;
-  border-bottom: 1px solid #555;
-  text-align: left;
-  transition: background 0.3s ease;
-}
-
-table tr:hover {
-  background: #2a2a2a;
 }
 </style>
 </head>
@@ -175,8 +90,8 @@ table tr:hover {
 
 <div class="container">
 
-<label>Nombre completo</label>
-<input id="nombre" placeholder="Ingresá tu nombre">
+<label>Nombre</label>
+<input id="nombre">
 
 <label>Servicio</label>
 <select id="servicio">
@@ -189,186 +104,114 @@ table tr:hover {
 <input type="date" id="fecha">
 
 <label>Horario</label>
-<div class="small">Seleccioná un horario disponible</div>
 <div id="horarios"></div>
 
-<button type="button" onclick="confirmar()">Confirmar reserva</button>
-<button type="button" class="cancel" onclick="cancelar()">Cancelar / Reprogramar</button>
-
-<hr style="margin: 25px 0; border-color: #444;">
-
-<h3 style="text-align:center; margin-bottom:10px;">Panel de administración</h3>
-
-<label>Seleccionar fecha para ver turnos</label>
-<input type="date" id="fechaAdmin">
-
-<table id="tablaTurnos">
-  <thead>
-    <tr>
-      <th>Hora</th>
-      <th>Nombre</th>
-      <th>Servicio</th>
-      <th>Disponible</th>
-      <th>Acción</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<button onclick="reservar()">Confirmar turno</button>
 
 </div>
 
 <script>
+const backend = "https://viaggiostyle-turnos.onrender.com";
+const horariosDiv = document.getElementById("horarios");
+const fechaInput = document.getElementById("fecha");
 let horaSeleccionada = "";
 
-const nombre = document.getElementById("nombre");
-const servicio = document.getElementById("servicio");
-const fecha = document.getElementById("fecha");
-const horarios = document.getElementById("horarios");
+fechaInput.min = new Date().toISOString().split("T")[0];
+fechaInput.addEventListener("change", generarHorarios);
 
-const fechaAdmin = document.getElementById("fechaAdmin");
-const tablaTurnos = document.getElementById("tablaTurnos").querySelector("tbody");
-
-const urlBackend = 'https://viaggiostyle-turnos.onrender.com';
-
-fecha.min = new Date().toISOString().split("T")[0];
-fecha.addEventListener("change", () => { cargarHorarios(); setTimeout(actualizarTurnos, 200); });
-
-fechaAdmin.min = new Date().toISOString().split("T")[0];
-fechaAdmin.addEventListener("change", cargarTurnosAdmin);
-
-// Generar horarios
-function cargarHorarios() {
-  horarios.innerHTML = "";
+function generarHorarios() {
+  horariosDiv.innerHTML = "";
+  horariosDiv.style.opacity = 0;
   horaSeleccionada = "";
 
-  // reset visual
-  horarios.style.opacity = "0";
-  horarios.style.transform = "translateY(20px)";
-
-  if (!fecha.value) {
-    horarios.innerHTML = "<div style='color:#888'>Seleccioná un día</div>";
-    horarios.style.opacity = "1";
-    horarios.style.transform = "translateY(0)";
-    return;
-  }
-
-  const dia = new Date(fecha.value + "T00:00:00").getDay();
+  const dia = new Date(fechaInput.value + "T00:00").getDay();
 
   if (dia === 0) {
-    horarios.innerHTML = "<div style='color:#888'>Domingos no trabajamos</div>";
-    horarios.style.opacity = "1";
-    horarios.style.transform = "translateY(0)";
+    horariosDiv.innerHTML = "<div>Los domingos no trabajamos</div>";
+    mostrarHorarios();
     return;
   }
 
-  if (dia === 3 || dia === 5) {
-    generar("10:00", "16:30");
+  let horas = [];
+
+  if ([1,2,4].includes(dia)) {
+    horas = [
+      "09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00",
+      "15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"
+    ];
   }
 
-  if (dia === 1 || dia === 2 || dia === 4) {
-    generar("09:00", "13:00");
-    generar("15:30", "20:00");
+  if ([3,5].includes(dia)) {
+    horas = [
+      "09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30",
+      "13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30"
+    ];
   }
 
   if (dia === 6) {
-    generar("09:00", "20:00");
+    for (let h = 9; h <= 20; h++) {
+      horas.push(`${String(h).padStart(2,"0")}:00`);
+      if (h !== 20) horas.push(`${String(h).padStart(2,"0")}:30`);
+    }
   }
 
-  // mostrar SIEMPRE que haya horarios
-  requestAnimationFrame(() => {
-    horarios.style.opacity = "1";
-    horarios.style.transform = "translateY(0)";
+  horas.forEach(hora => {
+    const b = document.createElement("button");
+    b.className = "hora-btn";
+    b.textContent = hora;
+    b.onclick = () => {
+      document.querySelectorAll(".hora-btn").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      horaSeleccionada = hora;
+    };
+    horariosDiv.appendChild(b);
+  });
+
+  bloquearOcupados();
+  mostrarHorarios();
+}
+
+function mostrarHorarios() {
+  setTimeout(() => {
+    horariosDiv.style.opacity = 1;
+    horariosDiv.style.transform = "translateY(0)";
+  }, 50);
+}
+
+async function bloquearOcupados() {
+  const res = await fetch(`${backend}/turnos?fecha=${fechaInput.value}`);
+  const turnos = await res.json();
+
+  document.querySelectorAll(".hora-btn").forEach(btn => {
+    const ocupado = turnos.find(t => t.hora === btn.textContent && !t.disponible);
+    if (ocupado) {
+      btn.classList.add("ocupado");
+      btn.onclick = null;
+    }
   });
 }
 
-
-
-
-
-// Actualizar turnos ocupados
-async function actualizarTurnos() {
-  if (!fecha.value) return;
-  try {
-    const res = await fetch(`${urlBackend}/turnos?fecha=${fecha.value}`);
-    const turnos = await res.json();
-
-    document.querySelectorAll(".hora-btn").forEach(boton => {
-      const hora = boton.textContent;
-      const turnoOcupado = turnos.find(t => t.hora === hora && !t.disponible);
-
-      if (turnoOcupado) { boton.classList.add("ocupado"); boton.onclick = null; }
-      else {
-        boton.classList.remove("ocupado");
-        boton.onclick = () => {
-          document.querySelectorAll(".hora-btn").forEach(x => x.classList.remove("active"));
-          boton.classList.add("active");
-          horaSeleccionada = hora;
-        };
-      }
-    });
-  } catch (err) { console.error(err); }
-}
-
-// Panel administración
-async function cargarTurnosAdmin() {
-  if (!fechaAdmin.value) return;
-  try {
-    const res = await fetch(`${urlBackend}/turnos?fecha=${fechaAdmin.value}`);
-    const turnos = await res.json();
-    tablaTurnos.innerHTML = "";
-    turnos.sort((a,b) => a.hora.localeCompare(b.hora));
-    turnos.forEach(t => {
-      const fila = document.createElement("tr");
-      fila.innerHTML = `
-        <td>${t.hora}</td>
-        <td>${t.nombre || ""}</td>
-        <td>${t.servicio || ""}</td>
-        <td>${t.disponible ? "Sí" : "No"}</td>
-        <td>
-          ${t.disponible ? "" : `<button onclick="cancelarTurno(${t.id})" style="padding:4px 8px; border:none; border-radius:6px; background:#ff4d4d; color:#fff; cursor:pointer;">Cancelar</button>`}
-        </td>
-      `;
-      tablaTurnos.appendChild(fila);
-    });
-  } catch (err) { console.error(err); }
-}
-
-function cancelarTurno(id) {
-  if (!confirm("¿Deseás cancelar este turno?")) return;
-  fetch(`${urlBackend}/cancelar`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id})})
-    .then(res=>res.json()).then(data=>{ alert(data.mensaje); actualizarTurnos(); cargarTurnosAdmin(); })
-    .catch(err=>{ console.error(err); alert("Error al cancelar turno"); });
-}
-
-function confirmar() {
-  if (!nombre.value || !servicio.value || !fecha.value || !horaSeleccionada) {
-    alert("Completá todos los campos"); return;
+async function reservar() {
+  if (!horaSeleccionada) {
+    alert("Seleccioná un horario");
+    return;
   }
 
-  if (!confirm(`Confirmar reserva:\n\nNombre: ${nombre.value}\nServicio: ${servicio.value}\nFecha: ${fecha.value}\nHora: ${horaSeleccionada}`)) return;
+  const res = await fetch(`${backend}/reservar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      nombre: nombre.value,
+      servicio: servicio.value,
+      fecha: fechaInput.value,
+      hora: horaSeleccionada
+    })
+  });
 
-  fetch(`${urlBackend}/reservar`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
-    nombre: nombre.value,
-    servicio: servicio.value,
-    fecha: fecha.value,
-    hora: horaSeleccionada
-  })})
-  .then(res=>res.json())
-  .then(data=>{
-    if (data.mensaje === "Turno reservado correctamente") {
-      actualizarTurnos();
-      if(fechaAdmin.value===fecha.value) cargarTurnosAdmin();
-      alert("Turno reservado correctamente!");
-    } else alert(data.error||data.mensaje);
-  })
-  .catch(err=>{ console.error(err); alert("Error al reservar turno"); });
+  const data = await res.json();
+  alert(data.message);
+  generarHorarios();
 }
-
-function cancelar() { alert("Funcionalidad de WhatsApp desactivada para pruebas."); }
-
-// Cargar horarios iniciales
-cargarHorarios();
-actualizarTurnos();
 </script>
 
 </body>

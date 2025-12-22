@@ -48,7 +48,7 @@ input, select {
   grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
   gap: 10px;
   opacity: 0;
-  transform: translateY(20px)
+  transform: translateY(20px);
   transition: all 0.4s ease;
 }
 
@@ -90,8 +90,8 @@ button {
 
 <div class="container">
 
-<label>Nombre</label>
-<input id="nombre">
+<label>Nombre completo</label>
+<input id="nombre" placeholder="Poné tu nombre aquí">
 
 <label>Servicio</label>
 <select id="servicio">
@@ -106,35 +106,30 @@ button {
 <label>Horario</label>
 <div id="horarios"></div>
 
-<button onclick="reservar()">Confirmar turno</button>
+<button onclick="reservar()">Agendar reserva</button>
 
 </div>
 
 <script>
-  const nombre = document.getElementById("nombre");
-const servicio = document.getElementById("servicio");
-
 const backend = "https://viaggiostyle-turnos.onrender.com";
-const horariosDiv = document.getElementById("horarios");
+
+const nombre = document.getElementById("nombre");
+const servicio = document.getElementById("servicio");
 const fechaInput = document.getElementById("fecha");
+const horariosDiv = document.getElementById("horarios");
+
 let horaSeleccionada = "";
 
+// Fecha mínima = hoy
+fechaInput.min = new Date().toISOString().split("T")[0];
 fechaInput.addEventListener("change", generarHorarios);
-
-function hoyISO() {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  return hoy.toISOString().split("T")[0];
-}
-
-fechaInput.min = hoyISO();
 
 function generarHorarios() {
   horariosDiv.innerHTML = "";
   horariosDiv.style.opacity = 0;
   horaSeleccionada = "";
 
-  const dia = new Date(fechaInput.value + "T00:00").getDay();
+  const dia = new Date(fechaInput.value + "T00:00:00").getDay();
 
   if (dia === 0) {
     horariosDiv.innerHTML = "<div>Los domingos no trabajamos</div>";
@@ -146,15 +141,18 @@ function generarHorarios() {
 
   if ([1,2,4].includes(dia)) {
     horas = [
-      "09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00",
-      "15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"
+      "09:00","09:30","10:00","10:30","11:00","11:30",
+      "12:00","12:30","13:00",
+      "15:00","15:30","16:00","16:30","17:00","17:30",
+      "18:00","18:30","19:00","19:30","20:00"
     ];
   }
 
   if ([3,5].includes(dia)) {
     horas = [
-      "09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30",
-      "13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30"
+      "09:00","09:30","10:00","10:30","11:00","11:30",
+      "12:00","12:30","13:00","13:30","14:00","14:30",
+      "15:00","15:30","16:00","16:30"
     ];
   }
 
@@ -166,15 +164,15 @@ function generarHorarios() {
   }
 
   horas.forEach(hora => {
-    const b = document.createElement("button");
-    b.className = "hora-btn";
-    b.textContent = hora;
-    b.onclick = () => {
-      document.querySelectorAll(".hora-btn").forEach(x => x.classList.remove("active"));
-      b.classList.add("active");
+    const btn = document.createElement("button");
+    btn.className = "hora-btn";
+    btn.textContent = hora;
+    btn.onclick = () => {
+      document.querySelectorAll(".hora-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
       horaSeleccionada = hora;
     };
-    horariosDiv.appendChild(b);
+    horariosDiv.appendChild(btn);
   });
 
   bloquearOcupados();
@@ -202,8 +200,8 @@ async function bloquearOcupados() {
 }
 
 async function reservar() {
-  if (!horaSeleccionada) {
-    alert("Seleccioná un horario");
+  if (!nombre.value || !servicio.value || !fechaInput.value || !horaSeleccionada) {
+    alert("Completá todos los campos");
     return;
   }
 
@@ -220,70 +218,14 @@ async function reservar() {
 
   const data = await res.json();
 
-if (!res.ok) {
-  alert(data.mensaje || "Error al reservar turno");
-  return;
-}
-
-alert(data.mensaje);
-
-function generarHorarios() {
-  horarios.innerHTML = "";
-  horaSeleccionada = "";
-
-  if (!fecha.value) return;
-
-  const dia = new Date(fecha.value + "T00:00:00").getDay();
-
-  // Domingo
-  if (dia === 0) {
-    horarios.innerHTML = "<div style='color:#888'>Los domingos no trabajamos</div>";
+  if (!res.ok) {
+    alert(data.mensaje || "Error al reservar turno");
     return;
   }
 
-  // Lunes, martes y jueves
-  if (dia === 1 || dia === 2 || dia === 4) {
-    generarBloque("09:00", "13:00");
-    generarBloque("15:00", "20:00");
-  }
-
-  // Miércoles y viernes
-  if (dia === 3 || dia === 5) {
-    generarBloque("09:00", "16:30");
-  }
-
-  // Sábado
-  if (dia === 6) {
-    generarBloque("09:00", "20:00");
-  }
-
-  actualizarTurnos(); // 🔑 clave
+  alert("Turno reservado correctamente");
+  generarHorarios();
 }
-
-function generarBloque(inicio, fin) {
-  let [h, m] = inicio.split(":").map(Number);
-  let [hf, mf] = fin.split(":").map(Number);
-
-  while (h < hf || (h === hf && m <= mf)) {
-    const hora = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-
-    const btn = document.createElement("button");
-    btn.className = "hora-btn";
-    btn.textContent = hora;
-
-    btn.onclick = () => {
-      document.querySelectorAll(".hora-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      horaSeleccionada = hora;
-    };
-
-    horarios.appendChild(btn);
-
-    m += 30;
-    if (m === 60) { m = 0; h++; }
-  }
-}
-
 </script>
 
 </body>

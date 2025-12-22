@@ -1,20 +1,18 @@
-require('dotenv').config();
+require("dotenv").config();
 
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 const cors = require("cors");
 
-
 const prisma = new PrismaClient();
 const app = express();
 
+/* =========================
+   MIDDLEWARES
+========================= */
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
-
-app.use(cors());
-app.use(express.json());
-
 
 /* =========================
    HEALTH CHECK
@@ -24,7 +22,7 @@ app.get("/", (req, res) => {
 });
 
 /* =========================
-   OBTENER TURNOS (ADMIN)
+   OBTENER TURNOS (FRONT)
 ========================= */
 app.get("/turnos", async (req, res) => {
   const { fecha } = req.query;
@@ -41,17 +39,16 @@ app.get("/turnos", async (req, res) => {
       fecha: {
         gte: inicio,
         lte: fin
-      },
-      disponible: false
+      }
     }
   });
 
   res.json(turnos);
 });
 
-// =======================
-// ENDPOINT ADMIN: ver todos los turnos
-// =======================
+/* =========================
+   OBTENER TURNOS (ADMIN)
+========================= */
 app.get("/admin/turnos", async (req, res) => {
   try {
     const turnos = await prisma.turno.findMany({
@@ -67,7 +64,6 @@ app.get("/admin/turnos", async (req, res) => {
     res.status(500).json({ mensaje: "Error al obtener turnos (admin)" });
   }
 });
-
 
 /* =========================
    RESERVAR TURNO
@@ -110,8 +106,6 @@ app.post("/reservar", async (req, res) => {
   res.json({ mensaje: "Turno reservado correctamente" });
 });
 
-
-
 /* =========================
    INICIAR SERVIDOR
 ========================= */
@@ -119,4 +113,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("🚀 API de turnos ViaggioStyle funcionando");
 });
-

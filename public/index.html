@@ -241,40 +241,51 @@ function cargarHorarios() {
   horarios.innerHTML = "";
   horaSeleccionada = "";
 
+  // RESET animación
+  horarios.style.opacity = "0";
+  horarios.style.transform = "translateY(20px)";
+
+  if (!fecha.value) {
+    horarios.innerHTML = "<div style='color:#888'>Seleccioná un día</div>";
+    return;
+  }
+
   const dia = new Date(fecha.value + "T00:00:00").getDay();
 
-  if (dia === 0) { horarios.innerHTML = "<div style='color:#888'>Domingos cerrado</div>"; return; }
-  if (dia === 3 || dia === 5) { generar("10:00","16:30"); }
-  if ([1,2,4].includes(dia)) { generar("09:00","13:00"); generar("15:30","20:00"); }
-  if (dia === 6) { generar("09:00","20:00"); }
+  // DOMINGO
+  if (dia === 0) {
+    horarios.innerHTML = "<div style='color:#888'>Domingos no trabajamos</div>";
+    mostrarHorarios();
+    return;
+  }
 
-  // Animación cascada
-  Array.from(horarios.children).forEach((b,i)=>{
-    b.style.opacity="0";
-    setTimeout(()=>{ b.style.opacity="1"; b.style.transform="translateY(0)"; }, i*80);
-  });
+  // MIÉRCOLES y VIERNES
+  if (dia === 3 || dia === 5) {
+    generar("10:00","16:30");
+    mostrarHorarios();
+    return;
+  }
+
+  // LUNES, MARTES, JUEVES
+  if (dia === 1 || dia === 2 || dia === 4) {
+    generar("09:00","13:00");
+    generar("15:30","20:00");
+    mostrarHorarios();
+    return;
+  }
+
+  // SÁBADO
+  if (dia === 6) {
+    generar("09:00","20:00");
+    mostrarHorarios();
+  }
 }
 
-function generar(inicio, fin) {
-  let [h,m] = inicio.split(":").map(Number);
-  let [hf,mf] = fin.split(":").map(Number);
-
-  while (h < hf || (h === hf && m <= mf)) {
-    const hora = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "hora-btn";
-    b.textContent = hora;
-    b.onclick = () => {
-      document.querySelectorAll(".hora-btn").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      horaSeleccionada = hora;
-    };
-    horarios.appendChild(b);
-
-    m += 30;
-    if (m === 60) { m = 0; h++; }
-  }
+function mostrarHorarios() {
+  setTimeout(() => {
+    horarios.style.opacity = "1";
+    horarios.style.transform = "translateY(0)";
+  }, 50);
 }
 
 // Actualizar turnos ocupados
